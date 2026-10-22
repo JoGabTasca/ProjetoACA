@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import ReactFlow, { Background, BaseEdge, Controls, EdgeLabelRenderer, Handle, MarkerType, Position, addEdge, getBezierPath, useEdgesState, useNodesState, useReactFlow } from 'reactflow';
-import { Activity, ArrowLeft, ArrowRight, Check, Circle, CircleHelp, Clock3, Code2, GitBranch, GitFork, Layers3, Maximize2, Minimize2, Network, PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, Play, Plus, RotateCcw, Route, Trash2, Waypoints, X } from 'lucide-react';
+import { Activity, ArrowLeft, ArrowRight, Check, Circle, CircleHelp, Clock3, Code2, GitBranch, GitFork, Layers3, Maximize2, Minimize2, Network, PanelLeftClose, PanelLeftOpen, Play, Plus, RotateCcw, Route, Waypoints, X } from 'lucide-react';
 import { buildAdjacencyMatrix } from './graphModel.js';
 
 const algorithms = [
@@ -76,7 +76,6 @@ function App() {
   const [notice, setNotice] = useState('');
   const [activeStep, setActiveStep] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [showControlPanel, setShowControlPanel] = useState(true);
   const { screenToFlowPosition } = useReactFlow();
 
   useEffect(() => {
@@ -166,17 +165,14 @@ function App() {
               <Background color="#e6e9ef" gap={20} size={1}/>
             </ReactFlow>
               <div className="canvas-toolbar"><div className="tool-mode-grid"><button className={`tool-option tool-icon-only ${tool === 'node' ? 'selected' : ''}`} title="Adicionar nó" aria-label="Adicionar nó" onClick={() => {setTool(tool==='node'?'select':'node');setPendingSource(null)}}><Circle size={22} strokeWidth={1.8}/></button><button className={`tool-option tool-icon-only ${tool === 'edge' && !directed ? 'selected' : ''}`} title="Aresta não direcionada" aria-label="Aresta não direcionada" onClick={() => {setTool('edge');setDirected(false);setPendingSource(null)}}><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="2"/><circle cx="19" cy="12" r="2"/><path d="M7 12h10"/></svg></button><button className={`tool-option tool-icon-only ${tool === 'edge' && directed ? 'selected' : ''}`} title="Aresta direcionada" aria-label="Aresta direcionada" onClick={() => {setTool('edge');setDirected(true);setPendingSource(null)}}><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="4" cy="12" r="2"/><path d="M6.5 12H19m-5-5 5 5-5 5"/></svg></button><button className="square-button" onClick={resetGraph} title="Limpar grafo" aria-label="Limpar grafo"><RotateCcw size={15}/></button></div></div>
-              <div className="canvas-actions"><button className="square-button" onClick={()=>setShowControlPanel((value)=>!value)} title={showControlPanel?'Ocultar painel':'Mostrar painel'} aria-label={showControlPanel?'Ocultar painel':'Mostrar painel'}>{showControlPanel?<PanelRightClose size={16}/>:<PanelRightOpen size={16}/>}</button><button className="square-button" onClick={toggleFullscreen} title={isFullscreen?'Sair da tela cheia':'Tela cheia'} aria-label={isFullscreen?'Sair da tela cheia':'Tela cheia'}>{isFullscreen?<Minimize2 size={16}/>:<Maximize2 size={16}/>}</button></div>
+              <div className="canvas-actions"><button className="square-button" onClick={toggleFullscreen} title={isFullscreen?'Sair da tela cheia':'Tela cheia'} aria-label={isFullscreen?'Sair da tela cheia':'Tela cheia'}>{isFullscreen?<Minimize2 size={16}/>:<Maximize2 size={16}/>}</button></div>
               <div className="canvas-badge"><span/> {nodes.length} nós <i/> {edges.length} arestas</div>
               {notice && <div className="toast"><Check size={14}/>{notice}<button onClick={() => setNotice('')}><X size={13}/></button></div>}
               <details className="matrix-floating" open><summary>Matriz de adjacência <span>{nodes.length} × {nodes.length}</span></summary>{nodes.length===0?<div className="matrix-empty">Adicione nós para visualizar a matriz.</div>:<div className="matrix-scroll"><table className="adjacency-table"><thead><tr><th></th>{nodes.map((node)=><th key={node.id} title={node.data.label}>{node.data.label}</th>)}</tr></thead><tbody>{nodes.map((node,row)=><tr key={node.id}><th title={node.data.label}>{node.data.label}</th>{matrix[row].map((value,column)=><td className={value!==null?'has-edge':''} key={`${row}-${column}`}>{value===null?'·':value}</td>)}</tr>)}</tbody></table></div>}</details>
             </div>
           </section>
 
-          {showControlPanel && <aside className="control-card"><div className="control-heading"><h2>Grafo</h2><span className="control-count">{String(nodes.length).padStart(2,'0')}</span></div>
-            <div className="control-section node-list-section"><div className="list-title"><label className="field-label">NÓS</label></div><div className="node-list">{nodes.length === 0 && <div className="empty-nodes">Nenhum nó</div>}{nodes.map((node,index)=><div className="node-row" key={node.id}><span className="node-number">{String(index+1).padStart(2,'0')}</span><span className="node-color"/><span className="node-name">{node.data.label}</span><button className="delete-node" title={`Remover ${node.data.label}`} onClick={()=>{setNodes((current)=>current.filter((item)=>item.id!==node.id));setEdges((current)=>current.filter((edge)=>edge.source!==node.id&&edge.target!==node.id));if(origin===node.id)setOrigin('')}}><Trash2 size={14}/></button></div>)}</div></div>
-            <button className="primary-button" onClick={()=>setScreen('algorithm')} disabled={nodes.length < 1}>Escolher algoritmo <ArrowRight size={16}/></button>
-          </aside>}
+          <aside className="control-card"><button className="primary-button" onClick={()=>setScreen('algorithm')} disabled={nodes.length < 1}>Escolher algoritmo <ArrowRight size={16}/></button></aside>
         </div>
       </section>}
 
