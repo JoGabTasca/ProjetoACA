@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import ReactFlow, { Background, Controls, MiniMap, MarkerType, addEdge, useEdgesState, useNodesState } from 'reactflow';
 import { Activity, ArrowLeft, ArrowRight, ArrowUpRight, Check, ChevronDown, CircleHelp, Clock3, Code2, GitBranch, GitFork, Layers3, MousePointer2, Network, Play, Plus, RotateCcw, Route, Share2, Trash2, Waypoints, X } from 'lucide-react';
 import { buildAdjacencyMatrix } from './graphModel.js';
