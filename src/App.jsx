@@ -56,10 +56,10 @@ const starterNodes = [
   { id: 'n4', position: { x: 320, y: 247 }, data: { label: 'Vila Nova' }, type: 'graphNode' },
 ];
 const starterEdges = [
-  { id: 'e1', source: 'n1', target: 'n2', sourceHandle: 'center-source', targetHandle: 'center-target', data: { weight: 4 }, label: '4', type: 'radial' },
-  { id: 'e2', source: 'n2', target: 'n3', sourceHandle: 'center-source', targetHandle: 'center-target', data: { weight: 2 }, label: '2', type: 'radial' },
-  { id: 'e3', source: 'n1', target: 'n4', sourceHandle: 'center-source', targetHandle: 'center-target', data: { weight: 3 }, label: '3', type: 'radial' },
-  { id: 'e4', source: 'n4', target: 'n3', sourceHandle: 'center-source', targetHandle: 'center-target', data: { weight: 5 }, label: '5', type: 'radial' },
+  { id: 'e1', source: 'n1', target: 'n2', sourceHandle: 'center-source', targetHandle: 'center-target', data: { weight: 4, directed: false }, label: '4', type: 'radial' },
+  { id: 'e2', source: 'n2', target: 'n3', sourceHandle: 'center-source', targetHandle: 'center-target', data: { weight: 2, directed: false }, label: '2', type: 'radial' },
+  { id: 'e3', source: 'n1', target: 'n4', sourceHandle: 'center-source', targetHandle: 'center-target', data: { weight: 3, directed: false }, label: '3', type: 'radial' },
+  { id: 'e4', source: 'n4', target: 'n3', sourceHandle: 'center-source', targetHandle: 'center-target', data: { weight: 5, directed: false }, label: '5', type: 'radial' },
 ];
 
 function App() {
@@ -84,7 +84,7 @@ function App() {
     return () => document.removeEventListener('fullscreenchange', syncFullscreen);
   }, []);
 
-  const matrix = useMemo(() => buildAdjacencyMatrix(nodes, edges, directed), [nodes, edges, directed]);
+  const matrix = useMemo(() => buildAdjacencyMatrix(nodes, edges), [nodes, edges]);
   const renameNode = useCallback((id, label) => {
     const name = label.trim();
     if (!name) return;
@@ -98,7 +98,7 @@ function App() {
 
   const onConnect = useCallback((connection) => {
     const weight = null;
-    const edge = { ...connection, sourceHandle: 'center-source', targetHandle: 'center-target', id: `e${Date.now()}`, type: 'radial', data: { weight }, label: '+',
+    const edge = { ...connection, sourceHandle: 'center-source', targetHandle: 'center-target', id: `e${Date.now()}`, type: 'radial', data: { weight, directed }, label: '+',
       markerEnd: directed ? { type: MarkerType.ArrowClosed, color: '#75819a' } : undefined };
     setEdges((current) => addEdge(edge, current));
   }, [directed, setEdges]);
@@ -125,7 +125,7 @@ function App() {
       const sourceName = nodes.find((item) => item.id === pendingSource)?.data.label;
       const edgeId = `e${Date.now()}`;
       const weight = null;
-      setEdges((current) => [...current, { id: edgeId, source: pendingSource, target: node.id, sourceHandle: 'center-source', targetHandle: 'center-target', type: 'radial', data: { weight }, label: '+',
+      setEdges((current) => [...current, { id: edgeId, source: pendingSource, target: node.id, sourceHandle: 'center-source', targetHandle: 'center-target', type: 'radial', data: { weight, directed }, label: '+',
         markerEnd: directed ? { type: MarkerType.ArrowClosed, color: '#75819a' } : undefined }]);
       setNotice(`${directed ? 'Conexão direcionada' : 'Conexão'}: ${sourceName} → ${node.data.label}`);
       setPendingSource(null); setTool('select'); setTimeout(() => setNotice(''), 2400);
@@ -133,15 +133,10 @@ function App() {
   };
 
   const resetGraph = () => { setNodes([]); setEdges([]); setOrigin(''); setPendingSource(null); };
-  const selectGraphDirection = (nextDirected) => {
-    const changed = directed !== nextDirected;
+  const selectEdgeDirection = (nextDirected) => {
     setDirected(nextDirected);
     setTool('edge');
     setPendingSource(null);
-    if (changed && edges.length > 0) {
-      setNotice(`Grafo ${nextDirected ? 'direcionado' : 'não direcionado'}: o tipo vale para todas as arestas.`);
-      setTimeout(() => setNotice(''), 2800);
-    }
   };
   const toggleFullscreen = async () => {
     try {
@@ -170,11 +165,11 @@ function App() {
       {screen === 'build' && <section className="page-content graph-page">
         <div className="editor-layout">
           <section className="canvas-card">
-            <div className={`canvas-wrap ${tool==='node'?'adding-node':''} ${tool==='edge'?'adding-edge':''}`}><ReactFlow nodes={nodes.map((node)=>({...node,data:{...node.data,onRename:renameNode}}))} edges={edges.map((edge) => ({ ...edge, type: 'radial', label: edge.data?.weight == null ? '+' : String(edge.data.weight), data:{...edge.data,editing:editingEdgeId===edge.id,onEdit:setEditingEdgeId,onWeightChange:setEdgeWeight,onEditEnd:()=>setEditingEdgeId(null)}, markerEnd: directed ? { type: MarkerType.ArrowClosed, color: '#75819a' } : undefined,
+            <div className={`canvas-wrap ${tool==='node'?'adding-node':''} ${tool==='edge'?'adding-edge':''}`}><ReactFlow nodes={nodes.map((node)=>({...node,data:{...node.data,onRename:renameNode}}))} edges={edges.map((edge) => ({ ...edge, type: 'radial', label: edge.data?.weight == null ? '+' : String(edge.data.weight), data:{...edge.data,editing:editingEdgeId===edge.id,onEdit:setEditingEdgeId,onWeightChange:setEdgeWeight,onEditEnd:()=>setEditingEdgeId(null)}, markerEnd: edge.data?.directed ? { type: MarkerType.ArrowClosed, color: '#75819a' } : undefined,
               style: { stroke: '#8e9aae', strokeWidth: 1.7 }, labelStyle: { fill: '#526078', fontWeight: 700, fontSize: 12 } }))} nodeTypes={nodeTypes} edgeTypes={edgeTypes} onNodesChange={onNodesChange} onEdgesChange={onEdgesChange} onConnect={onConnect} onNodeClick={onNodeClick} onPaneClick={onPaneClick} fitView fitViewOptions={{ padding: .28 }} nodesConnectable={false} elementsSelectable={tool === 'select'} connectionLineStyle={{ stroke: '#5267e8', strokeWidth: 2 }}>
               <Background color="#e6e9ef" gap={20} size={1}/>
             </ReactFlow>
-              <div className="canvas-toolbar"><div className="tool-mode-grid"><button className={`tool-option tool-icon-only ${tool === 'node' ? 'selected' : ''}`} title="Adicionar nó" aria-label="Adicionar nó" onClick={() => {setTool(tool==='node'?'select':'node');setPendingSource(null)}}><Circle size={22} strokeWidth={1.8}/></button><button className={`tool-option tool-icon-only ${!directed?'selected':''}`} aria-pressed={!directed} title="Grafo não direcionado — aplica a todas as arestas" aria-label="Grafo não direcionado" onClick={()=>selectGraphDirection(false)}><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="2"/><circle cx="19" cy="12" r="2"/><path d="M7 12h10"/></svg></button><button className={`tool-option tool-icon-only ${directed?'selected':''}`} aria-pressed={directed} title="Grafo direcionado — aplica a todas as arestas" aria-label="Grafo direcionado" onClick={()=>selectGraphDirection(true)}><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="4" cy="12" r="2"/><path d="M6.5 12H19m-5-5 5 5-5 5"/></svg></button><button className="square-button" onClick={resetGraph} title="Limpar grafo" aria-label="Limpar grafo"><RotateCcw size={15}/></button></div></div>
+              <div className="canvas-toolbar"><div className="tool-mode-grid"><button className={`tool-option tool-icon-only ${tool === 'node' ? 'selected' : ''}`} title="Adicionar nó" aria-label="Adicionar nó" onClick={() => {setTool(tool==='node'?'select':'node');setPendingSource(null)}}><Circle size={22} strokeWidth={1.8}/></button><button className={`tool-option tool-icon-only ${tool === 'edge' && !directed ? 'selected' : ''}`} aria-pressed={tool==='edge'&&!directed} title="Próxima aresta não direcionada" aria-label="Próxima aresta não direcionada" onClick={()=>selectEdgeDirection(false)}><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="2"/><circle cx="19" cy="12" r="2"/><path d="M7 12h10"/></svg></button><button className={`tool-option tool-icon-only ${tool === 'edge' && directed ? 'selected' : ''}`} aria-pressed={tool==='edge'&&directed} title="Próxima aresta direcionada" aria-label="Próxima aresta direcionada" onClick={()=>selectEdgeDirection(true)}><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="4" cy="12" r="2"/><path d="M6.5 12H19m-5-5 5 5-5 5"/></svg></button><button className="square-button" onClick={resetGraph} title="Limpar grafo" aria-label="Limpar grafo"><RotateCcw size={15}/></button></div></div>
               <div className="canvas-actions"><button className="square-button" onClick={toggleFullscreen} title={isFullscreen?'Sair da tela cheia':'Tela cheia'} aria-label={isFullscreen?'Sair da tela cheia':'Tela cheia'}>{isFullscreen?<Minimize2 size={16}/>:<Maximize2 size={16}/>}</button></div>
               <div className="canvas-badge"><span/> {nodes.length} nós <i/> {edges.length} arestas</div>
               {notice && <div className="toast"><Check size={14}/>{notice}<button onClick={() => setNotice('')}><X size={13}/></button></div>}
@@ -196,7 +191,7 @@ function App() {
       </section>}
 
       {screen === 'run' && <section className="page-content execution-page"><button className="back-link" onClick={()=>setScreen('algorithm')}><ArrowLeft size={15}/> Voltar aos algoritmos</button><div className="page-heading"><div><div className="eyebrow"><span className="eyebrow-line"/> ETAPA 03 · VISUALIZAÇÃO</div><h1>Acompanhe a execução<span className="title-period">.</span></h1><p className="lead">Veja como o algoritmo percorre e analisa a sua rede.</p></div><span className="coming-badge"><Clock3 size={14}/> EM DESENVOLVIMENTO</span></div>
-        <div className="execution-layout"><section className="canvas-card execution-graph"><div className="canvas-top"><div><span className="section-kicker">GRAFO EM ANÁLISE</span><h2>{chosen.name}</h2></div><span className="running-pill"><span/> Aguardando implementação</span></div><div className="canvas-wrap execution-canvas"><ReactFlow nodes={nodes.map((node)=>({...node,data:{...node.data,onRename:renameNode}}))} edges={edges.map((edge)=>({...edge,type:'radial',label:edge.data?.weight==null?undefined:String(edge.data.weight),data:{...edge.data,editing:editingEdgeId===edge.id,onEdit:setEditingEdgeId,onWeightChange:setEdgeWeight,onEditEnd:()=>setEditingEdgeId(null)},style:{stroke:'#a2aabd',strokeWidth:1.7},labelStyle:{fill:'#526078',fontWeight:700,fontSize:12},markerEnd:directed?{type:MarkerType.ArrowClosed,color:'#8e9aae'}:undefined}))} nodeTypes={nodeTypes} edgeTypes={edgeTypes} nodesDraggable={false} nodesConnectable={false} elementsSelectable={false} fitView><Background color="#e6e9ef" gap={20} size={1}/><Controls showInteractive={false}/></ReactFlow><div className="execution-overlay"><div className="overlay-icon"><Code2 size={21}/></div><b>Seu algoritmo entra aqui</b><p>Quando a lógica estiver implementada, o nó ativo será destacado neste espaço.</p></div></div></section>
+        <div className="execution-layout"><section className="canvas-card execution-graph"><div className="canvas-top"><div><span className="section-kicker">GRAFO EM ANÁLISE</span><h2>{chosen.name}</h2></div><span className="running-pill"><span/> Aguardando implementação</span></div><div className="canvas-wrap execution-canvas"><ReactFlow nodes={nodes.map((node)=>({...node,data:{...node.data,onRename:renameNode}}))} edges={edges.map((edge)=>({...edge,type:'radial',label:edge.data?.weight==null?undefined:String(edge.data.weight),data:{...edge.data,editing:editingEdgeId===edge.id,onEdit:setEditingEdgeId,onWeightChange:setEdgeWeight,onEditEnd:()=>setEditingEdgeId(null)},style:{stroke:'#a2aabd',strokeWidth:1.7},labelStyle:{fill:'#526078',fontWeight:700,fontSize:12},markerEnd:edge.data?.directed?{type:MarkerType.ArrowClosed,color:'#8e9aae'}:undefined}))} nodeTypes={nodeTypes} edgeTypes={edgeTypes} nodesDraggable={false} nodesConnectable={false} elementsSelectable={false} fitView><Background color="#e6e9ef" gap={20} size={1}/><Controls showInteractive={false}/></ReactFlow><div className="execution-overlay"><div className="overlay-icon"><Code2 size={21}/></div><b>Seu algoritmo entra aqui</b><p>Quando a lógica estiver implementada, o nó ativo será destacado neste espaço.</p></div></div></section>
           <aside className="step-panel"><div className="step-panel-head"><div><span className="section-kicker">PASSO A PASSO</span><h2>Execução</h2></div><span className="step-count">{String(activeStep).padStart(2,'0')} <i>/</i> 00</span></div><div className="step-empty"><div className="step-empty-icon"><Activity size={22}/></div><b>Nenhuma etapa ainda</b><p>Os passos do algoritmo aparecerão aqui conforme ele percorre o grafo.</p></div><div className="step-preview"><div className="preview-label"><span className="pulse-dot"/> PRÓXIMA AÇÃO</div><b>{stepLabel}</b><p>O nó em análise será destacado no grafo.</p></div><div className="step-controls"><button disabled><ArrowLeft size={15}/> Anterior</button><button disabled>Próximo <ArrowRight size={15}/></button></div></aside></div>
         <section className="result-card"><div className="result-head"><div><span className="section-kicker">SAÍDA DO ALGORITMO</span><h2>Resultado</h2></div><span className="result-format"><Code2 size={14}/> TEXTO</span></div><div className="result-placeholder"><div className="result-placeholder-icon"><Code2 size={18}/></div><div><b>O resultado será exibido aqui</b><p>Distâncias, ordem de visita ou arestas selecionadas aparecerão neste quadro.</p></div></div></section>
         <div className="algorithm-note"><div className="note-icon"><CircleHelp size={16}/></div><span>Área pronta para conectar ao retorno <code>{'{ steps, result }'}</code> das funções em <code>src/graphAlgorithms.js</code>.</span></div>
