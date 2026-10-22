@@ -43,3 +43,29 @@
 @media(max-width:800px){.app-shell.build-screen .control-card{right:9px;bottom:9px;width:min(235px,calc(100vw - 88px))}}
 @media(max-width:560px){.app-shell.build-screen .control-card{right:8px;bottom:8px;width:min(220px,calc(100vw - 80px))}}
 .graph-node-circle{cursor:grab}.graph-node-circle:active{cursor:grabbing}.node-name-input{width:62px;max-width:72px;padding:3px 2px;border:0;border-bottom:1px solid #8796f1;outline:0;background:transparent;color:inherit;text-align:center;font:inherit}.edge-weight-label{cursor:text;user-select:none}.edge-weight-label:hover{border-color:#aeb9ff;color:#4d61d8}.edge-weight-label.editing{padding:1px 3px;border-color:#8796f1;cursor:text}.edge-weight-label input{width:48px;padding:2px 3px;border:0;outline:0;background:transparent;color:#3f4a68;text-align:center;font:600 10px 'DM Mono',monospace}.edge-weight-label input::-webkit-inner-spin-button,.edge-weight-label input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}.edge-weight-label input[type=number]{appearance:textfield}
+
+/* Sidebar: etapas claras, com navegação compacta e acessível. */
+.sidebar{width:232px;flex-basis:232px;padding:23px 14px 15px;background:linear-gradient(180deg,#fff 0%,#fcfcfe 100%)}
+.brand{min-height:43px;padding:0 7px 16px;border-bottom:1px solid #f0f1f5;gap:10px}
+.brand-mark{width:36px;height:36px;border-radius:10px}
+.brand-name{font-size:17px}
+.sidebar-collapse{right:-3px;top:5px;width:25px;height:25px;border-radius:7px;color:#8b92a0;transition:color .16s,border-color .16s,background .16s}
+.sidebar-collapse:hover{background:#f5f6ff}
+.steps-nav{position:relative;margin-top:26px;gap:6px}
+.steps-nav:before{content:'ETAPAS';display:block;padding:0 10px 8px;color:#a0a6b2;font:8px 'DM Mono',monospace;letter-spacing:1.25px}
+.nav-step{height:51px;padding:7px 10px;gap:10px;border-radius:9px;transition:background .16s,border-color .16s,color .16s,transform .16s}
+.nav-step:hover{background:#f7f8fc;transform:translateX(1px)}
+.nav-step:focus-visible,.sidebar-collapse:focus-visible{outline:2px solid #8998f4;outline-offset:2px}
+.nav-step.active{position:relative;overflow:hidden;background:#f3f5ff;border-color:#e7eaff;color:#4358dc}
+.nav-step.active:before{content:'';position:absolute;left:0;top:10px;bottom:10px;width:3px;border-radius:0 3px 3px 0;background:#5368e9}
+.step-icon{width:33px;height:33px;flex:0 0 33px;border-radius:8px;background:#f4f5f8;color:#838b9b}
+.nav-step.active .step-icon{background:#e6eaff;color:#5368e9}
+.nav-step b{font-size:11px;font-weight:650;letter-spacing:.05px}
+.nav-index{padding:4px 5px;border-radius:4px;color:#a2a8b5;font-size:8px;transition:background .16s,color .16s}
+.nav-step.active .nav-index{background:#e8ebff;color:#5368e9}
+.sidebar-collapsed .sidebar{width:68px;flex-basis:68px;padding-top:23px}
+.sidebar-collapsed .brand{min-height:44px;padding:0 0 13px;border-bottom:1px solid #f0f1f5}
+.sidebar-collapsed .steps-nav:before{content:none}
+.sidebar-collapsed .steps-nav{margin-top:25px}
+.sidebar-collapsed .nav-step{height:46px}
+@media(max-width:800px){.sidebar{width:64px;flex-basis:64px}.app-shell:not(.sidebar-collapsed) .sidebar{width:214px;flex-basis:214px}.app-shell:not(.sidebar-collapsed) .brand-name{display:block}.app-shell:not(.sidebar-collapsed) .nav-step>span:not(.step-icon){display:block}.app-shell:not(.sidebar-collapsed) .steps-nav:before{display:block}}

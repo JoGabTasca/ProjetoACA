@@ -154,10 +154,10 @@ function App() {
   return <div className={`app-shell ${sidebarCollapsed ? 'sidebar-collapsed' : ''} ${screen === 'build' ? 'build-screen' : ''}`}>
     <aside className="sidebar">
       <div className="brand"><div className="brand-mark"><Network size={20} strokeWidth={2.2} /></div><div className="brand-name">smartnet<span>.</span></div><button className="sidebar-collapse" onClick={()=>setSidebarCollapsed((value)=>!value)} title={sidebarCollapsed?'Expandir menu':'Recolher menu'} aria-label={sidebarCollapsed?'Expandir menu':'Recolher menu'}>{sidebarCollapsed?<PanelLeftOpen size={16}/>:<PanelLeftClose size={16}/>}</button></div>
-      <nav className="steps-nav">
-        <button className={`nav-step ${screen === 'build' ? 'active' : ''}`} onClick={() => setScreen('build')} title="Montar grafo"><span className="step-icon"><Circle size={17}/></span><span><b>Montar grafo</b></span></button>
-        <button className={`nav-step ${screen === 'algorithm' ? 'active' : ''}`} onClick={() => setScreen('algorithm')} title="Algoritmo"><span className="step-icon"><Activity size={17}/></span><span><b>Algoritmo</b></span></button>
-        <button className={`nav-step ${screen === 'run' ? 'active' : ''}`} onClick={() => setScreen('run')} title="Execução"><span className="step-icon"><Play size={16}/></span><span><b>Execução</b></span></button>
+      <nav className="steps-nav" aria-label="Etapas do projeto">
+        <button className={`nav-step ${screen === 'build' ? 'active' : ''}`} onClick={() => setScreen('build')} title="Montar grafo" aria-current={screen === 'build' ? 'step' : undefined}><span className="step-icon"><Circle size={17}/></span><span><b>Montar grafo</b></span><span className="nav-index">01</span></button>
+        <button className={`nav-step ${screen === 'algorithm' ? 'active' : ''}`} onClick={() => setScreen('algorithm')} title="Algoritmo" aria-current={screen === 'algorithm' ? 'step' : undefined}><span className="step-icon"><Activity size={17}/></span><span><b>Algoritmo</b></span><span className="nav-index">02</span></button>
+        <button className={`nav-step ${screen === 'run' ? 'active' : ''}`} onClick={() => setScreen('run')} title="Execução" aria-current={screen === 'run' ? 'step' : undefined}><span className="step-icon"><Play size={16}/></span><span><b>Execução</b></span><span className="nav-index">03</span></button>
       </nav>
     </aside>
 
