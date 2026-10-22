@@ -92,3 +92,23 @@
 .sidebar-collapsed .sidebar-finish span{display:none}
 @media(max-width:800px){.sidebar-bottom{display:block}.app-shell:not(.sidebar-collapsed) .sidebar-finish span{display:block}}
 @media(max-width:560px){.home-page{min-height:calc(100vh - 0px);padding:36px 18px}.home-mark{width:46px;height:46px;margin-bottom:18px}.home-description{font-size:12px}.home-flow{margin-top:42px;grid-template-columns:1fr;gap:8px}.home-flow>div{min-height:72px;padding:12px 14px}.home-flow small{font-size:9px}}
+
+/* Representação em lista de adjacência no quadro do grafo. */
+.app-shell.build-screen .adjacency-list-floating{position:absolute;z-index:8;left:13px;bottom:13px;width:min(390px,calc(100% - 285px));max-height:min(320px,48vh);overflow:auto;padding:9px 10px;background:#fffffff2;border:1px solid #e6e9ef;border-radius:8px;box-shadow:0 5px 20px #26314a1a;backdrop-filter:blur(8px)}
+.adjacency-list-floating summary{display:flex;align-items:center;gap:8px;cursor:pointer;list-style:none;color:#697285;font-size:9px}
+.adjacency-list-floating summary::-webkit-details-marker{display:none}
+.adjacency-list-floating summary:after{content:'−';margin-left:0;color:#8e95a3;font-size:13px}
+.adjacency-list-floating:not([open]) summary:after{content:'+'}
+.adjacency-list-floating summary span{margin-left:auto;color:#949baa;font:8px 'DM Mono',monospace}
+.adjacency-list-content{margin-top:7px}
+.adjacency-list-row{display:grid;grid-template-columns:minmax(45px,70px) minmax(0,1fr);align-items:start;gap:7px;padding:5px 1px;border-top:1px solid #f0f1f4}
+.adjacency-list-row>b{overflow:hidden;padding-top:4px;color:#687184;font-size:8px;text-overflow:ellipsis;white-space:nowrap}
+.adjacency-neighbors{display:flex;flex-wrap:wrap;gap:4px}
+.adjacency-neighbor{min-height:21px;display:inline-flex;align-items:center;gap:4px;padding:3px 5px;border:1px solid #e9ebf0;border-radius:5px;background:#fff;color:#616b80;font-size:8px;white-space:nowrap}
+.adjacency-neighbor i{font-style:normal;color:#5368e9;font-weight:700}
+.adjacency-neighbor small{padding-left:3px;border-left:1px solid #eceef2;color:#5368e9;font:8px 'DM Mono',monospace}
+.adjacency-no-neighbors{padding:4px;color:#a2a8b4;font-size:8px}
+.adjacency-explanation{margin:8px 0 0;padding:7px 1px 1px;border-top:1px solid #eceef2;color:#818999;font-size:8px;line-height:1.5}
+.adjacency-explanation b{color:#5c6578}
+@media(max-width:800px){.app-shell.build-screen .adjacency-list-floating{left:9px;bottom:9px;width:min(390px,calc(100% - 18px));max-height:min(220px,32vh)}}
+@media(max-width:560px){.app-shell.build-screen .adjacency-list-floating{left:8px;bottom:54px;width:calc(100% - 16px);max-height:min(190px,31vh)}.adjacency-list-row{grid-template-columns:48px minmax(0,1fr);gap:5px}.adjacency-neighbor{font-size:7px}}

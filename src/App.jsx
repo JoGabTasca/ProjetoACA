@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import ReactFlow, { Background, BaseEdge, Controls, EdgeLabelRenderer, Handle, MarkerType, Position, addEdge, getBezierPath, useEdgesState, useNodesState, useReactFlow } from 'reactflow';
 import { Activity, ArrowLeft, ArrowRight, Check, Circle, CircleHelp, Clock3, Code2, GitBranch, GitFork, Layers3, LogOut, Maximize2, Minimize2, Network, PanelLeftClose, PanelLeftOpen, Play, Plus, RotateCcw, Route, Waypoints, X } from 'lucide-react';
-import { buildAdjacencyMatrix } from './graphModel.js';
+import { buildAdjacencyList } from './graphModel.js';
 
 const algorithms = [
   { id: 'dfs', name: 'Busca em profundidade', short: 'DFS', subtitle: 'Explore cada caminho até o fim antes de voltar.', icon: GitBranch, complexity: 'O(V + E)', kind: 'Percurso' },
@@ -98,7 +98,7 @@ function App() {
     return () => document.removeEventListener('fullscreenchange', syncFullscreen);
   }, []);
 
-  const matrix = useMemo(() => buildAdjacencyMatrix(nodes, edges), [nodes, edges]);
+  const adjacencyList = useMemo(() => buildAdjacencyList(nodes, edges), [nodes, edges]);
   const renameNode = useCallback((id, label) => {
     const name = label.trim();
     if (!name) return;
@@ -184,7 +184,7 @@ function App() {
           <div className="home-mark"><Network size={25}/></div>
           <div className="eyebrow"><span className="eyebrow-line"/> SMARTNET ANALYZER</div>
           <h1>Explore seus grafos<span className="title-period">.</span></h1>
-          <p className="home-description">Monte uma rede, visualize sua matriz de adjacência e prepare a análise dos algoritmos de grafos.</p>
+          <p className="home-description">Monte uma rede, visualize sua lista de adjacência e prepare a análise dos algoritmos de grafos.</p>
           <button className="primary-button home-start" onClick={() => setScreen('build')}>Começar a montar <ArrowRight size={16}/></button>
           <div className="home-example"><span className="live-dot"/> Grafo de exemplo do trabalho carregado</div>
         </div>
@@ -204,7 +204,18 @@ function App() {
               <div className="canvas-toolbar"><div className="tool-mode-grid"><button className={`tool-option tool-icon-only ${tool === 'node' ? 'selected' : ''}`} title="Adicionar nó" aria-label="Adicionar nó" onClick={() => {setTool(tool==='node'?'select':'node');setPendingSource(null)}}><Circle size={22} strokeWidth={1.8}/></button><button className={`tool-option tool-icon-only ${tool === 'edge' && !directed ? 'selected' : ''}`} aria-pressed={tool==='edge'&&!directed} title="Próxima aresta não direcionada" aria-label="Próxima aresta não direcionada" onClick={()=>selectEdgeDirection(false)}><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="2"/><circle cx="19" cy="12" r="2"/><path d="M7 12h10"/></svg></button><button className={`tool-option tool-icon-only ${tool === 'edge' && directed ? 'selected' : ''}`} aria-pressed={tool==='edge'&&directed} title="Próxima aresta direcionada" aria-label="Próxima aresta direcionada" onClick={()=>selectEdgeDirection(true)}><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="4" cy="12" r="2"/><path d="M6.5 12H19m-5-5 5 5-5 5"/></svg></button><button className="square-button" onClick={resetGraph} title="Limpar grafo" aria-label="Limpar grafo"><RotateCcw size={15}/></button></div></div>
               <div className="canvas-actions"><button className="square-button" onClick={toggleFullscreen} title={isFullscreen?'Sair da tela cheia':'Tela cheia'} aria-label={isFullscreen?'Sair da tela cheia':'Tela cheia'}>{isFullscreen?<Minimize2 size={16}/>:<Maximize2 size={16}/>}</button></div>
               {notice && <div className="toast"><Check size={14}/>{notice}<button onClick={() => setNotice('')}><X size={13}/></button></div>}
-              <details className="matrix-floating" open><summary>Matriz de adjacência <span>{nodes.length} × {nodes.length}</span></summary>{nodes.length===0?<div className="matrix-empty">Adicione nós para visualizar a matriz.</div>:<div className="matrix-scroll"><table className="adjacency-table"><thead><tr><th></th>{nodes.map((node)=><th key={node.id} title={node.data.label}>{node.data.label}</th>)}</tr></thead><tbody>{nodes.map((node,row)=><tr key={node.id}><th title={node.data.label}>{node.data.label}</th>{matrix[row].map((value,column)=><td className={value!==null?'has-edge':''} key={`${row}-${column}`}>{value===null?'·':value}</td>)}</tr>)}</tbody></table></div>}</details>
+              <details className="adjacency-list-floating" open>
+                <summary>Lista de adjacência <span>{nodes.length} nós</span></summary>
+                {nodes.length === 0
+                  ? <div className="matrix-empty">Adicione nós para visualizar a lista.</div>
+                  : <div className="adjacency-list-content">{adjacencyList.map((vertex) => <div className="adjacency-list-row" key={vertex.id}>
+                    <b title={vertex.label}>{vertex.label}</b>
+                    <div className="adjacency-neighbors">{vertex.neighbors.length
+                      ? vertex.neighbors.map((neighbor, index) => <span className={`adjacency-neighbor ${neighbor.directed ? 'is-directed' : 'is-undirected'}`} title={neighbor.directed ? `Aresta direcionada para ${neighbor.label}` : `Aresta não direcionada para ${neighbor.label}`} key={`${neighbor.edgeId}-${index}`}><i>{neighbor.directed ? '→' : '↔'}</i>{neighbor.label}<small>{neighbor.weight}</small></span>)
+                      : <span className="adjacency-no-neighbors">Sem vizinhos</span>}</div>
+                  </div>)}</div>}
+                <p className="adjacency-explanation"><b>Por que lista?</b> Guarda só as conexões existentes (O(V + E) de memória, contra O(V²) da matriz). DFS e BFS percorrem vizinhos em O(V + E), e os pesos ficam junto de cada conexão para Dijkstra e Kruskal.</p>
+              </details>
             </div>
           </section>
 
@@ -218,7 +229,7 @@ function App() {
             {(selectedAlgorithm==='dfs'||selectedAlgorithm==='bfs'||selectedAlgorithm==='dijkstra')&&<label className="select-label">Nó de origem<select value={origin} onChange={(event)=>setOrigin(event.target.value)}>{nodes.map((node)=> <option key={node.id} value={node.id}>{node.data.label}</option>)}</select></label>}
             {selectedAlgorithm==='kruskal'&&<div className="notice-box"><CircleHelp size={16}/><span>Kruskal opera em grafos não direcionados. A direção atual será ignorada nesta análise.</span></div>}
             <button className="primary-button" onClick={beginAlgorithm}>Ver tela de execução <ArrowRight size={16}/></button><div className="not-ready"><Clock3 size={14}/> Execução dos algoritmos será implementada depois.</div></aside></div>
-        <div className="algorithm-note"><div className="note-icon"><Code2 size={16}/></div><span>Os algoritmos serão implementados em <b>JavaScript puro</b>, usando a matriz de adjacência do projeto. Essa etapa prepara a interface e os pontos de integração.</span></div>
+        <div className="algorithm-note"><div className="note-icon"><Code2 size={16}/></div><span>Os algoritmos serão implementados em <b>JavaScript puro</b>, usando a lista de adjacência do projeto. Essa etapa prepara a interface e os pontos de integração.</span></div>
       </section>}
 
       {screen === 'run' && <section className="page-content execution-page"><button className="back-link" onClick={()=>setScreen('algorithm')}><ArrowLeft size={15}/> Voltar aos algoritmos</button><div className="page-heading"><div><div className="eyebrow"><span className="eyebrow-line"/> ETAPA 03 · VISUALIZAÇÃO</div><h1>Acompanhe a execução<span className="title-period">.</span></h1><p className="lead">Veja como o algoritmo percorre e analisa a sua rede.</p></div><span className="coming-badge"><Clock3 size={14}/> EM DESENVOLVIMENTO</span></div>
