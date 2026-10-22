@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import ReactFlow, { Background, BaseEdge, Controls, EdgeLabelRenderer, Handle, MarkerType, Position, addEdge, getBezierPath, useEdgesState, useNodesState, useReactFlow } from 'reactflow';
-import { Activity, ArrowLeft, ArrowRight, Check, Circle, CircleHelp, Clock3, Code2, GitBranch, GitFork, Layers3, Maximize2, Minimize2, Network, PanelLeftClose, PanelLeftOpen, Play, Plus, RotateCcw, Route, Waypoints, X } from 'lucide-react';
+import { Activity, ArrowLeft, ArrowRight, Check, Circle, CircleHelp, Clock3, Code2, GitBranch, GitFork, Layers3, LogOut, Maximize2, Minimize2, Network, PanelLeftClose, PanelLeftOpen, Play, Plus, RotateCcw, Route, Waypoints, X } from 'lucide-react';
 import { buildAdjacencyMatrix } from './graphModel.js';
 
 const algorithms = [
@@ -77,7 +77,7 @@ const starterEdges = [
 ];
 
 function App() {
-  const [screen, setScreen] = useState('build');
+  const [screen, setScreen] = useState('home');
   const [nodes, setNodes, onNodesChange] = useNodesState(starterNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(starterEdges);
   const [tool, setTool] = useState('select');
@@ -173,9 +173,27 @@ function App() {
         <button className={`nav-step ${screen === 'algorithm' ? 'active' : ''}`} onClick={() => setScreen('algorithm')} title="Algoritmo" aria-current={screen === 'algorithm' ? 'step' : undefined}><span className="step-icon"><Activity size={17}/></span><span><b>Algoritmo</b></span><span className="nav-index">02</span></button>
         <button className={`nav-step ${screen === 'run' ? 'active' : ''}`} onClick={() => setScreen('run')} title="Execução" aria-current={screen === 'run' ? 'step' : undefined}><span className="step-icon"><Play size={16}/></span><span><b>Execução</b></span><span className="nav-index">03</span></button>
       </nav>
+      <div className="sidebar-bottom">
+        {screen !== 'home' && <button className="sidebar-finish" onClick={() => setScreen('home')} title="Finalizar aplicação e voltar ao início"><LogOut size={16}/><span>Finalizar aplicação</span></button>}
+      </div>
     </aside>
 
     <main className="main-area">
+      {screen === 'home' && <section className="home-page">
+        <div className="home-hero">
+          <div className="home-mark"><Network size={25}/></div>
+          <div className="eyebrow"><span className="eyebrow-line"/> SMARTNET ANALYZER</div>
+          <h1>Explore seus grafos<span className="title-period">.</span></h1>
+          <p className="home-description">Monte uma rede, visualize sua matriz de adjacência e prepare a análise dos algoritmos de grafos.</p>
+          <button className="primary-button home-start" onClick={() => setScreen('build')}>Começar a montar <ArrowRight size={16}/></button>
+          <div className="home-example"><span className="live-dot"/> Grafo de exemplo do trabalho carregado</div>
+        </div>
+        <div className="home-flow" aria-label="Etapas de uso">
+          <div><span>01</span><b>Monte o grafo</b><small>Crie nós e conexões</small></div>
+          <div><span>02</span><b>Escolha o algoritmo</b><small>DFS, BFS, Dijkstra ou Kruskal</small></div>
+          <div><span>03</span><b>Acompanhe a análise</b><small>Veja passos e resultados</small></div>
+        </div>
+      </section>}
       {screen === 'build' && <section className="page-content graph-page">
         <div className="editor-layout">
           <section className="canvas-card">
