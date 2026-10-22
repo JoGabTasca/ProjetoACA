@@ -1,6 +1,6 @@
-import React, { useCallback, useMemo, useState } from 'react';
-import ReactFlow, { Background, BaseEdge, Controls, EdgeLabelRenderer, Handle, MiniMap, MarkerType, Position, addEdge, getBezierPath, useEdgesState, useNodesState, useReactFlow } from 'reactflow';
-import { Activity, ArrowLeft, ArrowRight, ArrowUpRight, Check, Circle, CircleHelp, Clock3, Code2, GitBranch, GitFork, Layers3, Minus, Network, PanelLeftClose, PanelLeftOpen, Play, Plus, RotateCcw, Route, Share2, Trash2, Waypoints, X } from 'lucide-react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import ReactFlow, { Background, BaseEdge, Controls, EdgeLabelRenderer, Handle, MarkerType, Position, addEdge, getBezierPath, useEdgesState, useNodesState, useReactFlow } from 'reactflow';
+import { Activity, ArrowLeft, ArrowRight, ArrowUpRight, Check, Circle, CircleHelp, Clock3, Code2, GitBranch, GitFork, Layers3, Maximize2, Minimize2, Minus, Network, PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, Play, Plus, RotateCcw, Route, Share2, Trash2, Waypoints, X } from 'lucide-react';
 import { buildAdjacencyMatrix } from './graphModel.js';
 
 const algorithms = [
@@ -70,7 +70,15 @@ function App() {
   const [pendingSource, setPendingSource] = useState(null);
   const [notice, setNotice] = useState('');
   const [activeStep, setActiveStep] = useState(0);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showControlPanel, setShowControlPanel] = useState(true);
   const { screenToFlowPosition } = useReactFlow();
+
+  useEffect(() => {
+    const syncFullscreen = () => setIsFullscreen(Boolean(document.fullscreenElement));
+    document.addEventListener('fullscreenchange', syncFullscreen);
+    return () => document.removeEventListener('fullscreenchange', syncFullscreen);
+  }, []);
 
   const matrix = useMemo(() => buildAdjacencyMatrix(nodes, edges, directed), [nodes, edges, directed]);
   const chosen = algorithms.find((item) => item.id === selectedAlgorithm);
@@ -113,11 +121,20 @@ function App() {
   };
 
   const resetGraph = () => { setNodes([]); setEdges([]); setOrigin(''); setPendingSource(null); };
+  const toggleFullscreen = async () => {
+    try {
+      if (document.fullscreenElement) await document.exitFullscreen();
+      else await document.documentElement.requestFullscreen();
+    } catch {
+      setNotice('Tela cheia não está disponível neste navegador.');
+      setTimeout(() => setNotice(''), 2400);
+    }
+  };
 
   const beginAlgorithm = () => { setActiveStep(0); setScreen('run'); };
   const stepLabel = selectedAlgorithm === 'dfs' ? 'Explorando vizinhos do nó atual' : selectedAlgorithm === 'bfs' ? 'Verificando os nós vizinhos' : selectedAlgorithm === 'kruskal' ? 'Analisando aresta de menor peso' : 'Atualizando custos dos caminhos';
 
-  return <div className={`app-shell ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
+  return <div className={`app-shell ${sidebarCollapsed ? 'sidebar-collapsed' : ''} ${screen === 'build' ? 'build-screen' : ''}`}>
     <aside className="sidebar">
       <div className="brand"><div className="brand-mark"><Network size={20} strokeWidth={2.2} /></div><div className="brand-name">smartnet<span>.</span></div><button className="sidebar-collapse" onClick={()=>setSidebarCollapsed((value)=>!value)} title={sidebarCollapsed?'Expandir menu':'Recolher menu'} aria-label={sidebarCollapsed?'Expandir menu':'Recolher menu'}>{sidebarCollapsed?<PanelLeftOpen size={16}/>:<PanelLeftClose size={16}/>}</button></div>
       <nav className="steps-nav">
@@ -128,32 +145,29 @@ function App() {
     </aside>
 
     <main className="main-area">
-      {screen === 'build' && <section className="page-content">
+      {screen === 'build' && <section className="page-content graph-page">
         <div className="editor-layout">
           <section className="canvas-card">
-            <div className="canvas-top"><div className="canvas-tools"><button className="square-button" onClick={resetGraph} title="Limpar grafo" aria-label="Limpar grafo"><RotateCcw size={15}/></button></div></div>
             <div className={`canvas-wrap ${tool==='node'?'adding-node':''} ${tool==='edge'?'adding-edge':''}`}><ReactFlow nodes={nodes} edges={edges.map((edge) => ({ ...edge, type: 'radial', label: weighted ? edge.data?.weight : undefined, markerEnd: directed ? { type: MarkerType.ArrowClosed, color: '#75819a' } : undefined,
               style: { stroke: '#8e9aae', strokeWidth: 1.7 }, labelStyle: { fill: '#526078', fontWeight: 700, fontSize: 12 } }))} nodeTypes={nodeTypes} edgeTypes={edgeTypes} onNodesChange={onNodesChange} onEdgesChange={onEdgesChange} onConnect={onConnect} onNodeClick={onNodeClick} onPaneClick={onPaneClick} fitView fitViewOptions={{ padding: .28 }} nodesConnectable={false} elementsSelectable={tool === 'select'} connectionLineStyle={{ stroke: '#5267e8', strokeWidth: 2 }}>
-              <Background color="#e6e9ef" gap={20} size={1}/><MiniMap nodeColor="#5267e8" maskColor="rgba(248,249,251,.7)"/><Controls showInteractive={false}/>
+              <Background color="#e6e9ef" gap={20} size={1}/><Controls showInteractive={false}/>
             </ReactFlow>
+              <div className="canvas-toolbar"><button className={`tool-option tool-icon-only ${tool === 'node' ? 'selected' : ''}`} title="Adicionar nó no quadro" aria-label="Adicionar nó no quadro" onClick={() => {setTool(tool==='node'?'select':'node');setPendingSource(null)}}><Circle size={22} strokeWidth={1.8}/></button><button className={`tool-option tool-icon-only ${tool === 'edge' ? 'selected' : ''}`} title="Conectar dois nós" aria-label="Conectar dois nós" onClick={() => {setTool(tool==='edge'?'select':'edge');setPendingSource(null)}}><Minus size={25} strokeWidth={1.8}/></button><button className="square-button" onClick={resetGraph} title="Limpar grafo" aria-label="Limpar grafo"><RotateCcw size={15}/></button></div>
+              <div className="canvas-actions"><button className="square-button" onClick={()=>setShowControlPanel((value)=>!value)} title={showControlPanel?'Ocultar painel':'Mostrar painel'} aria-label={showControlPanel?'Ocultar painel':'Mostrar painel'}>{showControlPanel?<PanelRightClose size={16}/>:<PanelRightOpen size={16}/>}</button><button className="square-button" onClick={toggleFullscreen} title={isFullscreen?'Sair da tela cheia':'Tela cheia'} aria-label={isFullscreen?'Sair da tela cheia':'Tela cheia'}>{isFullscreen?<Minimize2 size={16}/>:<Maximize2 size={16}/>}</button></div>
               <div className="canvas-badge"><span/> {nodes.length} nós <i/> {edges.length} arestas</div>
               {notice && <div className="toast"><Check size={14}/>{notice}<button onClick={() => setNotice('')}><X size={13}/></button></div>}
             </div>
-            <div className="canvas-footer"><div className="legend-item"><span className="legend-node"/> Nó</div><div className="legend-item"><span className="legend-edge"/> Aresta</div><div className="legend-item"><span className="legend-weight">4</span> Peso</div></div>
           </section>
 
-          <aside className="control-card"><div className="control-heading"><h2>Grafo</h2><span className="control-count">{String(nodes.length).padStart(2,'0')}</span></div>
-            <div className="control-section"><div className="tool-grid"><button className={`tool-option tool-icon-only ${tool === 'node' ? 'selected' : ''}`} title="Adicionar nó no quadro" aria-label="Adicionar nó no quadro" onClick={() => {setTool(tool==='node'?'select':'node');setPendingSource(null)}}><Circle size={22} strokeWidth={1.8}/></button><button className={`tool-option tool-icon-only ${tool === 'edge' ? 'selected' : ''}`} title="Conectar dois nós" aria-label="Conectar dois nós" onClick={() => {setTool(tool==='edge'?'select':'edge');setPendingSource(null)}}><Minus size={25} strokeWidth={1.8}/></button></div>
-              {tool === 'edge' && <div className="edge-instruction"><span>{pendingSource ? 'Clique no nó de destino' : 'Clique nos dois nós para conectar'}</span></div>}
-            </div>
+          {showControlPanel && <aside className="control-card"><div className="control-heading"><h2>Grafo</h2><span className="control-count">{String(nodes.length).padStart(2,'0')}</span></div>
             <div className="control-section"><label className="field-label">TIPO DE CONEXÃO</label><div className="segmented"><button className={!directed?'chosen':''} onClick={()=>setDirected(false)}><Share2 size={15}/> Não direcionada</button><button className={directed?'chosen':''} onClick={()=>setDirected(true)}><ArrowUpRight size={15}/> Direcionada</button></div></div>
             <div className="control-section compact-section"><div><label className="field-label">PESOS NAS ARESTAS</label><p className="field-hint">Defina um custo para cada conexão</p></div><button className={`toggle ${weighted?'on':''}`} role="switch" aria-checked={weighted} onClick={()=>setWeighted((value)=>!value)}><span/></button></div>
             <div className="control-section node-list-section"><div className="list-title"><label className="field-label">NÓS</label></div><div className="node-list">{nodes.length === 0 && <div className="empty-nodes">Nenhum nó</div>}{nodes.map((node,index)=><div className="node-row" key={node.id}><span className="node-number">{String(index+1).padStart(2,'0')}</span><span className="node-color"/><span className="node-name">{node.data.label}</span><button className="delete-node" title={`Remover ${node.data.label}`} onClick={()=>{setNodes((current)=>current.filter((item)=>item.id!==node.id));setEdges((current)=>current.filter((edge)=>edge.source!==node.id&&edge.target!==node.id));if(origin===node.id)setOrigin('')}}><Trash2 size={14}/></button></div>)}</div>
               <div className="list-title edge-list-title"><label className="field-label">CONEXÕES {weighted && '· PESO'}</label></div><div className="node-list edge-list">{edges.length===0&&<div className="empty-nodes">Nenhuma conexão. Selecione “Conectar” e escolha dois nós.</div>}{edges.map((edge,index)=>{const from=nodes.find((node)=>node.id===edge.source)?.data.label??'?';const to=nodes.find((node)=>node.id===edge.target)?.data.label??'?';return <div className="edge-row" key={edge.id}><span className="edge-number">{String(index+1).padStart(2,'0')}</span><span className="edge-label">{from} <ArrowRight size={11}/> {to}</span>{weighted&&<input className="weight-input" type="number" aria-label={`Peso de ${from} para ${to}`} value={edge.data?.weight??1} onChange={(event)=>{const value=event.target.value;setEdges((current)=>current.map((item)=>item.id===edge.id?{...item,data:{...item.data,weight:value},label:value}:item))}}/>}<button className="delete-node" title="Remover conexão" onClick={()=>setEdges((current)=>current.filter((item)=>item.id!==edge.id))}><X size={13}/></button></div>})}</div></div>
+            <details className="matrix-disclosure"><summary>Matriz de adjacência <span>{nodes.length} × {nodes.length}</span></summary>{nodes.length===0?<div className="matrix-empty">Adicione nós para visualizar a matriz.</div>:<div className="matrix-scroll"><table className="adjacency-table"><thead><tr><th></th>{nodes.map((node)=><th key={node.id} title={node.data.label}>{node.data.label}</th>)}</tr></thead><tbody>{nodes.map((node,row)=><tr key={node.id}><th title={node.data.label}>{node.data.label}</th>{matrix[row].map((value,column)=><td className={value!==null?'has-edge':''} key={`${row}-${column}`}>{value===null?'·':value}</td>)}</tr>)}</tbody></table></div>}</details>
             <button className="primary-button" onClick={()=>setScreen('algorithm')} disabled={nodes.length < 1}>Escolher algoritmo <ArrowRight size={16}/></button>
-          </aside>
+          </aside>}
         </div>
-        <section className="matrix-card"><div className="matrix-card-head"><div><span className="section-kicker">ESTRUTURA EM MEMÓRIA</span><h2>Matriz de adjacência</h2></div><span className="matrix-dimensions">{nodes.length} × {nodes.length}</span></div>{nodes.length===0?<div className="matrix-empty">Adicione nós para visualizar a matriz.</div>:<div className="matrix-scroll"><table className="adjacency-table"><thead><tr><th></th>{nodes.map((node)=><th key={node.id} title={node.data.label}>{node.data.label}</th>)}</tr></thead><tbody>{nodes.map((node,row)=><tr key={node.id}><th title={node.data.label}>{node.data.label}</th>{matrix[row].map((value,column)=><td className={value!==null?'has-edge':''} key={`${row}-${column}`}>{value===null?'·':value}</td>)}</tr>)}</tbody></table></div>}<div className="matrix-caption"><span className="matrix-key">·</span> Sem conexão <span className="matrix-key filled">1</span> Aresta sem peso representada por 1</div></section>
       </section>}
 
       {screen === 'algorithm' && <section className="page-content algorithm-page"><button className="back-link" onClick={()=>setScreen('build')}><ArrowLeft size={15}/> Voltar ao grafo</button><div className="page-heading"><div><div className="eyebrow"><span className="eyebrow-line"/> ETAPA 02 · ANÁLISE</div><h1>Escolha um algoritmo<span className="title-period">.</span></h1><p className="lead">Selecione o método que deseja aplicar ao seu grafo.</p></div><div className="graph-summary"><Network size={16}/><span>{nodes.length} nós</span><i/>{edges.length} arestas</div></div>
@@ -166,7 +180,7 @@ function App() {
       </section>}
 
       {screen === 'run' && <section className="page-content execution-page"><button className="back-link" onClick={()=>setScreen('algorithm')}><ArrowLeft size={15}/> Voltar aos algoritmos</button><div className="page-heading"><div><div className="eyebrow"><span className="eyebrow-line"/> ETAPA 03 · VISUALIZAÇÃO</div><h1>Acompanhe a execução<span className="title-period">.</span></h1><p className="lead">Veja como o algoritmo percorre e analisa a sua rede.</p></div><span className="coming-badge"><Clock3 size={14}/> EM DESENVOLVIMENTO</span></div>
-        <div className="execution-layout"><section className="canvas-card execution-graph"><div className="canvas-top"><div><span className="section-kicker">GRAFO EM ANÁLISE</span><h2>{chosen.name}</h2></div><span className="running-pill"><span/> Aguardando implementação</span></div><div className="canvas-wrap execution-canvas"><ReactFlow nodes={nodes} edges={edges.map((edge)=>({...edge,type:'radial',label:weighted?edge.data?.weight:undefined,style:{stroke:'#a2aabd',strokeWidth:1.7},labelStyle:{fill:'#526078',fontWeight:700,fontSize:12},markerEnd:directed?{type:MarkerType.ArrowClosed,color:'#8e9aae'}:undefined}))} nodeTypes={nodeTypes} edgeTypes={edgeTypes} nodesDraggable={false} nodesConnectable={false} elementsSelectable={false} fitView><Background color="#e6e9ef" gap={20} size={1}/><MiniMap nodeColor="#5267e8" maskColor="rgba(248,249,251,.7)"/><Controls showInteractive={false}/></ReactFlow><div className="execution-overlay"><div className="overlay-icon"><Code2 size={21}/></div><b>Seu algoritmo entra aqui</b><p>Quando a lógica estiver implementada, o nó ativo será destacado neste espaço.</p></div></div></section>
+        <div className="execution-layout"><section className="canvas-card execution-graph"><div className="canvas-top"><div><span className="section-kicker">GRAFO EM ANÁLISE</span><h2>{chosen.name}</h2></div><span className="running-pill"><span/> Aguardando implementação</span></div><div className="canvas-wrap execution-canvas"><ReactFlow nodes={nodes} edges={edges.map((edge)=>({...edge,type:'radial',label:weighted?edge.data?.weight:undefined,style:{stroke:'#a2aabd',strokeWidth:1.7},labelStyle:{fill:'#526078',fontWeight:700,fontSize:12},markerEnd:directed?{type:MarkerType.ArrowClosed,color:'#8e9aae'}:undefined}))} nodeTypes={nodeTypes} edgeTypes={edgeTypes} nodesDraggable={false} nodesConnectable={false} elementsSelectable={false} fitView><Background color="#e6e9ef" gap={20} size={1}/><Controls showInteractive={false}/></ReactFlow><div className="execution-overlay"><div className="overlay-icon"><Code2 size={21}/></div><b>Seu algoritmo entra aqui</b><p>Quando a lógica estiver implementada, o nó ativo será destacado neste espaço.</p></div></div></section>
           <aside className="step-panel"><div className="step-panel-head"><div><span className="section-kicker">PASSO A PASSO</span><h2>Execução</h2></div><span className="step-count">{String(activeStep).padStart(2,'0')} <i>/</i> 00</span></div><div className="step-empty"><div className="step-empty-icon"><Activity size={22}/></div><b>Nenhuma etapa ainda</b><p>Os passos do algoritmo aparecerão aqui conforme ele percorre o grafo.</p></div><div className="step-preview"><div className="preview-label"><span className="pulse-dot"/> PRÓXIMA AÇÃO</div><b>{stepLabel}</b><p>O nó em análise será destacado no grafo.</p></div><div className="step-controls"><button disabled><ArrowLeft size={15}/> Anterior</button><button disabled>Próximo <ArrowRight size={15}/></button></div></aside></div>
         <section className="result-card"><div className="result-head"><div><span className="section-kicker">SAÍDA DO ALGORITMO</span><h2>Resultado</h2></div><span className="result-format"><Code2 size={14}/> TEXTO</span></div><div className="result-placeholder"><div className="result-placeholder-icon"><Code2 size={18}/></div><div><b>O resultado será exibido aqui</b><p>Distâncias, ordem de visita ou arestas selecionadas aparecerão neste quadro.</p></div></div></section>
         <div className="algorithm-note"><div className="note-icon"><CircleHelp size={16}/></div><span>Área pronta para conectar ao retorno <code>{'{ steps, result }'}</code> das funções em <code>src/graphAlgorithms.js</code>.</span></div>
