@@ -133,6 +133,16 @@ function App() {
   };
 
   const resetGraph = () => { setNodes([]); setEdges([]); setOrigin(''); setPendingSource(null); };
+  const selectGraphDirection = (nextDirected) => {
+    const changed = directed !== nextDirected;
+    setDirected(nextDirected);
+    setTool('edge');
+    setPendingSource(null);
+    if (changed && edges.length > 0) {
+      setNotice(`Grafo ${nextDirected ? 'direcionado' : 'não direcionado'}: o tipo vale para todas as arestas.`);
+      setTimeout(() => setNotice(''), 2800);
+    }
+  };
   const toggleFullscreen = async () => {
     try {
       if (document.fullscreenElement) await document.exitFullscreen();
@@ -164,7 +174,7 @@ function App() {
               style: { stroke: '#8e9aae', strokeWidth: 1.7 }, labelStyle: { fill: '#526078', fontWeight: 700, fontSize: 12 } }))} nodeTypes={nodeTypes} edgeTypes={edgeTypes} onNodesChange={onNodesChange} onEdgesChange={onEdgesChange} onConnect={onConnect} onNodeClick={onNodeClick} onPaneClick={onPaneClick} fitView fitViewOptions={{ padding: .28 }} nodesConnectable={false} elementsSelectable={tool === 'select'} connectionLineStyle={{ stroke: '#5267e8', strokeWidth: 2 }}>
               <Background color="#e6e9ef" gap={20} size={1}/>
             </ReactFlow>
-              <div className="canvas-toolbar"><div className="tool-mode-grid"><button className={`tool-option tool-icon-only ${tool === 'node' ? 'selected' : ''}`} title="Adicionar nó" aria-label="Adicionar nó" onClick={() => {setTool(tool==='node'?'select':'node');setPendingSource(null)}}><Circle size={22} strokeWidth={1.8}/></button><button className={`tool-option tool-icon-only ${tool === 'edge' && !directed ? 'selected' : ''}`} title="Aresta não direcionada" aria-label="Aresta não direcionada" onClick={() => {setTool('edge');setDirected(false);setPendingSource(null)}}><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="2"/><circle cx="19" cy="12" r="2"/><path d="M7 12h10"/></svg></button><button className={`tool-option tool-icon-only ${tool === 'edge' && directed ? 'selected' : ''}`} title="Aresta direcionada" aria-label="Aresta direcionada" onClick={() => {setTool('edge');setDirected(true);setPendingSource(null)}}><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="4" cy="12" r="2"/><path d="M6.5 12H19m-5-5 5 5-5 5"/></svg></button><button className="square-button" onClick={resetGraph} title="Limpar grafo" aria-label="Limpar grafo"><RotateCcw size={15}/></button></div></div>
+              <div className="canvas-toolbar"><div className="tool-mode-grid"><button className={`tool-option tool-icon-only ${tool === 'node' ? 'selected' : ''}`} title="Adicionar nó" aria-label="Adicionar nó" onClick={() => {setTool(tool==='node'?'select':'node');setPendingSource(null)}}><Circle size={22} strokeWidth={1.8}/></button><button className={`tool-option tool-icon-only ${!directed?'selected':''}`} aria-pressed={!directed} title="Grafo não direcionado — aplica a todas as arestas" aria-label="Grafo não direcionado" onClick={()=>selectGraphDirection(false)}><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="2"/><circle cx="19" cy="12" r="2"/><path d="M7 12h10"/></svg></button><button className={`tool-option tool-icon-only ${directed?'selected':''}`} aria-pressed={directed} title="Grafo direcionado — aplica a todas as arestas" aria-label="Grafo direcionado" onClick={()=>selectGraphDirection(true)}><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="4" cy="12" r="2"/><path d="M6.5 12H19m-5-5 5 5-5 5"/></svg></button><button className="square-button" onClick={resetGraph} title="Limpar grafo" aria-label="Limpar grafo"><RotateCcw size={15}/></button></div></div>
               <div className="canvas-actions"><button className="square-button" onClick={toggleFullscreen} title={isFullscreen?'Sair da tela cheia':'Tela cheia'} aria-label={isFullscreen?'Sair da tela cheia':'Tela cheia'}>{isFullscreen?<Minimize2 size={16}/>:<Maximize2 size={16}/>}</button></div>
               <div className="canvas-badge"><span/> {nodes.length} nós <i/> {edges.length} arestas</div>
               {notice && <div className="toast"><Check size={14}/>{notice}<button onClick={() => setNotice('')}><X size={13}/></button></div>}
