@@ -50,16 +50,30 @@ const nodeTypes = { graphNode: CircleNode };
 const edgeTypes = { radial: RadialEdge };
 
 const starterNodes = [
-  { id: 'n1', position: { x: 115, y: 116 }, data: { label: 'Centro' }, type: 'graphNode' },
-  { id: 'n2', position: { x: 335, y: 54 }, data: { label: 'Jardins' }, type: 'graphNode' },
-  { id: 'n3', position: { x: 545, y: 129 }, data: { label: 'Estação' }, type: 'graphNode' },
-  { id: 'n4', position: { x: 320, y: 247 }, data: { label: 'Vila Nova' }, type: 'graphNode' },
+  { id: 'n1', position: { x: 25, y: 150 }, data: { label: 'O' }, type: 'graphNode' },
+  { id: 'n2', position: { x: 205, y: 55 }, data: { label: 'A' }, type: 'graphNode' },
+  { id: 'n3', position: { x: 235, y: 195 }, data: { label: 'B' }, type: 'graphNode' },
+  { id: 'n4', position: { x: 95, y: 330 }, data: { label: 'C' }, type: 'graphNode' },
+  { id: 'n5', position: { x: 445, y: 210 }, data: { label: 'D' }, type: 'graphNode' },
+  { id: 'n6', position: { x: 365, y: 340 }, data: { label: 'E' }, type: 'graphNode' },
+  { id: 'n7', position: { x: 500, y: 55 }, data: { label: 'F' }, type: 'graphNode' },
+  { id: 'n8', position: { x: 675, y: 210 }, data: { label: 'T' }, type: 'graphNode' },
 ];
 const starterEdges = [
-  { id: 'e1', source: 'n1', target: 'n2', sourceHandle: 'center-source', targetHandle: 'center-target', data: { weight: 4, directed: false }, label: '4', type: 'radial' },
-  { id: 'e2', source: 'n2', target: 'n3', sourceHandle: 'center-source', targetHandle: 'center-target', data: { weight: 2, directed: false }, label: '2', type: 'radial' },
-  { id: 'e3', source: 'n1', target: 'n4', sourceHandle: 'center-source', targetHandle: 'center-target', data: { weight: 3, directed: false }, label: '3', type: 'radial' },
-  { id: 'e4', source: 'n4', target: 'n3', sourceHandle: 'center-source', targetHandle: 'center-target', data: { weight: 5, directed: false }, label: '5', type: 'radial' },
+  { id: 'e1', source: 'n1', target: 'n2', sourceHandle: 'center-source', targetHandle: 'center-target', data: { weight: 2, directed: false }, label: '2', type: 'radial' },
+  { id: 'e2', source: 'n1', target: 'n3', sourceHandle: 'center-source', targetHandle: 'center-target', data: { weight: 5, directed: false }, label: '5', type: 'radial' },
+  { id: 'e3', source: 'n1', target: 'n4', sourceHandle: 'center-source', targetHandle: 'center-target', data: { weight: 4, directed: false }, label: '4', type: 'radial' },
+  { id: 'e4', source: 'n2', target: 'n3', sourceHandle: 'center-source', targetHandle: 'center-target', data: { weight: 2, directed: false }, label: '2', type: 'radial' },
+  { id: 'e5', source: 'n2', target: 'n7', sourceHandle: 'center-source', targetHandle: 'center-target', data: { weight: 12, directed: false }, label: '12', type: 'radial' },
+  { id: 'e6', source: 'n2', target: 'n5', sourceHandle: 'center-source', targetHandle: 'center-target', data: { weight: 7, directed: false }, label: '7', type: 'radial' },
+  { id: 'e7', source: 'n3', target: 'n4', sourceHandle: 'center-source', targetHandle: 'center-target', data: { weight: 1, directed: false }, label: '1', type: 'radial' },
+  { id: 'e8', source: 'n3', target: 'n5', sourceHandle: 'center-source', targetHandle: 'center-target', data: { weight: 4, directed: false }, label: '4', type: 'radial' },
+  { id: 'e9', source: 'n3', target: 'n6', sourceHandle: 'center-source', targetHandle: 'center-target', data: { weight: 3, directed: false }, label: '3', type: 'radial' },
+  { id: 'e10', source: 'n4', target: 'n6', sourceHandle: 'center-source', targetHandle: 'center-target', data: { weight: 4, directed: false }, label: '4', type: 'radial' },
+  { id: 'e11', source: 'n5', target: 'n6', sourceHandle: 'center-source', targetHandle: 'center-target', data: { weight: 4, directed: false }, label: '4', type: 'radial' },
+  { id: 'e12', source: 'n5', target: 'n8', sourceHandle: 'center-source', targetHandle: 'center-target', data: { weight: 5, directed: false }, label: '5', type: 'radial' },
+  { id: 'e13', source: 'n6', target: 'n8', sourceHandle: 'center-source', targetHandle: 'center-target', data: { weight: 7, directed: false }, label: '7', type: 'radial' },
+  { id: 'e14', source: 'n7', target: 'n8', sourceHandle: 'center-source', targetHandle: 'center-target', data: { weight: 3, directed: false }, label: '3', type: 'radial' },
 ];
 
 function App() {
