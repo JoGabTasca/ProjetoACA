@@ -166,7 +166,7 @@ function App() {
   const stepLabel = selectedAlgorithm === 'dfs' ? 'Explorando vizinhos do nó atual' : selectedAlgorithm === 'bfs' ? 'Verificando os nós vizinhos' : selectedAlgorithm === 'kruskal' ? 'Analisando aresta de menor peso' : 'Atualizando custos dos caminhos';
 
   return <div className={`app-shell ${sidebarCollapsed ? 'sidebar-collapsed' : ''} ${screen === 'build' ? 'build-screen' : ''}`}>
-    <aside className="sidebar">
+    {screen !== 'home' && <aside className="sidebar">
       <div className="brand"><div className="brand-mark"><Network size={20} strokeWidth={2.2} /></div><div className="brand-name">smartnet<span>.</span></div><button className="sidebar-collapse" onClick={()=>setSidebarCollapsed((value)=>!value)} title={sidebarCollapsed?'Expandir menu':'Recolher menu'} aria-label={sidebarCollapsed?'Expandir menu':'Recolher menu'}>{sidebarCollapsed?<PanelLeftOpen size={16}/>:<PanelLeftClose size={16}/>}</button></div>
       <nav className="steps-nav" aria-label="Etapas do projeto">
         <button className={`nav-step ${screen === 'build' ? 'active' : ''}`} onClick={() => setScreen('build')} title="Montar grafo" aria-current={screen === 'build' ? 'step' : undefined}><span className="step-icon"><Circle size={17}/></span><span><b>Montar grafo</b></span><span className="nav-index">01</span></button>
@@ -176,7 +176,7 @@ function App() {
       <div className="sidebar-bottom">
         {screen !== 'home' && <button className="sidebar-finish" onClick={() => setScreen('home')} title="Finalizar aplicação e voltar ao início"><LogOut size={16}/><span>Finalizar aplicação</span></button>}
       </div>
-    </aside>
+    </aside>}
 
     <main className="main-area">
       {screen === 'home' && <section className="home-page">
