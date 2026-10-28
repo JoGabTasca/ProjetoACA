@@ -1,13 +1,15 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import ReactFlow, { Background, BaseEdge, Controls, EdgeLabelRenderer, Handle, MarkerType, Position, addEdge, getBezierPath, useEdgesState, useNodesState, useReactFlow } from 'reactflow';
 import { Activity, ArrowLeft, ArrowRight, Check, Circle, CircleHelp, Clock3, Code2, GitBranch, GitFork, Layers3, LogOut, Maximize2, Minimize2, Network, PanelLeftClose, PanelLeftOpen, Play, Plus, RotateCcw, Route, Waypoints, X } from 'lucide-react';
+import { executeAlgorithm } from './algorithmRunner.js';
 import { buildAdjacencyList } from './graphModel.js';
+import AlgorithmStudy, { traversalState } from './AlgorithmStudy.jsx';
 
 const algorithms = [
   { id: 'dfs', name: 'Busca em profundidade', short: 'DFS', subtitle: 'Explore cada caminho até o fim antes de voltar.', icon: GitBranch, complexity: 'O(V + E)', kind: 'Percurso' },
   { id: 'bfs', name: 'Busca em largura', short: 'BFS', subtitle: 'Visite os vizinhos por camadas a partir da origem.', icon: Layers3, complexity: 'O(V + E)', kind: 'Percurso' },
   { id: 'dijkstra', name: 'Caminho mínimo', short: 'Dijkstra', subtitle: 'Encontre as rotas de menor custo no grafo.', icon: Route, complexity: 'O(V²)', kind: 'Roteamento' },
-  { id: 'kruskal', name: 'Árvore geradora mínima', short: 'Kruskal', subtitle: 'Conecte todos os nós com o menor custo total.', icon: Waypoints, complexity: 'O(E log E)', kind: 'Otimização' },
+  { id: 'kruskal', name: 'Árvore geradora mínima', short: 'Kruskal', subtitle: 'Conecte todos os nós com o menor custo total.', icon: Waypoints, complexity: 'O(E log E + VE)', kind: 'Otimização' },
 ];
 
 // Um handle central mantém a API de conexões do React Flow satisfeita.
@@ -16,7 +18,7 @@ function CircleNode({ id, data }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(data.label);
   useEffect(() => setDraft(data.label), [data.label]);
-  return <div className="graph-node-circle" title="Duplo clique para editar o nome" onDoubleClick={(event)=>{if(event.target.tagName==='INPUT')return;setDraft(data.label);setEditing(true)}}>
+  return <div className={`graph-node-circle ${data.algorithmActive ? 'algorithm-active' : ''}`} title="Duplo clique para editar o nome" onDoubleClick={(event)=>{if(event.target.tagName==='INPUT')return;setDraft(data.label);setEditing(true)}}>
     <Handle id="center-target" type="target" position={Position.Top} className="invisible-handle" />
     {editing
       ? <input className="node-name-input" autoFocus value={draft} aria-label="Nome do nó" onChange={(event)=>setDraft(event.target.value)} onBlur={()=>{data.onRename?.(id,draft);setEditing(false)}} onKeyDown={(event)=>{if(event.key==='Enter')event.currentTarget.blur();if(event.key==='Escape'){setDraft(data.label);setEditing(false)}}} onDoubleClick={(event)=>event.stopPropagation()} />
@@ -89,6 +91,9 @@ function App() {
   const [pendingSource, setPendingSource] = useState(null);
   const [notice, setNotice] = useState('');
   const [activeStep, setActiveStep] = useState(0);
+  const [executionStatus, setExecutionStatus] = useState('idle');
+  const [executionResult, setExecutionResult] = useState(null);
+  const [executionError, setExecutionError] = useState('');
   const [isFullscreen, setIsFullscreen] = useState(false);
   const { screenToFlowPosition } = useReactFlow();
 
@@ -162,10 +167,59 @@ function App() {
     }
   };
 
-  const beginAlgorithm = () => { setActiveStep(0); setScreen('run'); };
-  const stepLabel = selectedAlgorithm === 'dfs' ? 'Explorando vizinhos do nó atual' : selectedAlgorithm === 'bfs' ? 'Verificando os nós vizinhos' : selectedAlgorithm === 'kruskal' ? 'Analisando aresta de menor peso' : 'Atualizando custos dos caminhos';
+  const beginAlgorithm = () => {
+    setActiveStep(0);
+    setExecutionResult(null);
+    setExecutionError('');
+    setExecutionStatus('loading');
+    setScreen('run');
 
-  return <div className={`app-shell ${sidebarCollapsed ? 'sidebar-collapsed' : ''} ${screen === 'build' ? 'build-screen' : ''}`}>
+    try {
+      const result = executeAlgorithm({
+        algorithmId: selectedAlgorithm,
+        adjacencyList,
+        edges,
+        startVertex: selectedAlgorithm === 'kruskal' ? null : origin,
+      });
+      setExecutionResult(result);
+      setExecutionStatus('success');
+    } catch (error) {
+      setExecutionError(error.message);
+      setExecutionStatus('error');
+    }
+  };
+  const executionSteps = executionResult?.steps ?? [];
+  const currentStep = executionSteps[activeStep] ?? null;
+  const examinedEdges = traversalState(executionSteps.slice(0, activeStep + 1));
+  const activeNodeIds = new Set();
+  if (currentStep?.nodeId) activeNodeIds.add(currentStep.nodeId);
+  if (currentStep?.type === 'inspect-edge') {
+    if (currentStep.fromNodeId) activeNodeIds.add(currentStep.fromNodeId);
+    if (currentStep.toNodeId) activeNodeIds.add(currentStep.toNodeId);
+  }
+  const result = executionResult?.result;
+  const formattedResult = Array.isArray(result)
+    ? result.map((item) => item.pre !== undefined
+      ? `${item.node} — pré-visita: ${item.pre}, pós-visita: ${item.post}`
+      : item.level !== undefined
+        ? `${item.node} — nível: ${item.level}`
+        : `${item.node} — custo acumulado: ${item.cost}`).join('\n')
+    : result?.distances
+      ? result.distances.map((item) => `${item.node} — ${item.cost ?? 'inalcançável'}`).join('\n')
+      : result?.edges
+        ? `${result.edges.length ? result.edges.map((edge) => `${edge.from} — ${edge.to}: peso ${edge.weight}`).join('\n') : 'Nenhuma aresta selecionada.'}\nPeso total: ${result.totalWeight}${result.components > 1 ? `\nComponentes desconectados: ${result.components}` : ''}`
+        : JSON.stringify(result ?? '', null, 2);
+  const resultTitle = selectedAlgorithm === 'dfs'
+    ? 'Tempos de pré-visita e pós-visita'
+    : selectedAlgorithm === 'bfs'
+      ? 'Ordem de visita e nível de cada nó'
+    : selectedAlgorithm === 'dijkstra'
+      ? 'Menor custo desde o nó inicial'
+      : selectedAlgorithm === 'kruskal'
+        ? 'Arestas escolhidas e peso total'
+        : 'Resultado do algoritmo';
+
+  return <div className={`app-shell ${sidebarCollapsed ? 'sidebar-collapsed' : ''} ${screen === 'build' ? 'build-screen' : ''} ${screen === 'run' ? 'run-screen' : ''}`}>
     {screen !== 'home' && <aside className="sidebar">
       <div className="brand"><div className="brand-mark"><Network size={20} strokeWidth={2.2} /></div><div className="brand-name">smartnet<span>.</span></div><button className="sidebar-collapse" onClick={()=>setSidebarCollapsed((value)=>!value)} title={sidebarCollapsed?'Expandir menu':'Recolher menu'} aria-label={sidebarCollapsed?'Expandir menu':'Recolher menu'}>{sidebarCollapsed?<PanelLeftOpen size={16}/>:<PanelLeftClose size={16}/>}</button></div>
       <nav className="steps-nav" aria-label="Etapas do projeto">
@@ -228,15 +282,54 @@ function App() {
           <aside className="run-config"><span className="section-kicker">PARÂMETROS</span><h2>Preparar execução</h2><div className="chosen-algorithm"><div className="chosen-icon"><chosen.icon size={19}/></div><div><small>ALGORITMO SELECIONADO</small><b>{chosen.short} — {chosen.name}</b></div><span className="complexity">{chosen.complexity}</span></div>
             {(selectedAlgorithm==='dfs'||selectedAlgorithm==='bfs'||selectedAlgorithm==='dijkstra')&&<label className="select-label">Nó de origem<select value={origin} onChange={(event)=>setOrigin(event.target.value)}>{nodes.map((node)=> <option key={node.id} value={node.id}>{node.data.label}</option>)}</select></label>}
             {selectedAlgorithm==='kruskal'&&<div className="notice-box"><CircleHelp size={16}/><span>Kruskal opera em grafos não direcionados. A direção atual será ignorada nesta análise.</span></div>}
-            <button className="primary-button" onClick={beginAlgorithm}>Ver tela de execução <ArrowRight size={16}/></button><div className="not-ready"><Clock3 size={14}/> Execução dos algoritmos será implementada depois.</div></aside></div>
-        <div className="algorithm-note"><div className="note-icon"><Code2 size={16}/></div><span>Os algoritmos serão implementados em <b>JavaScript puro</b>, usando a lista de adjacência do projeto. Essa etapa prepara a interface e os pontos de integração.</span></div>
+            <button className="primary-button" onClick={beginAlgorithm}>Executar algoritmo <ArrowRight size={16}/></button><div className="not-ready"><Clock3 size={14}/> {chosen.short} pronto para executar no navegador.</div></aside></div>
+        <div className="algorithm-note"><div className="note-icon"><Code2 size={16}/></div><span>Escolha a origem e execute o algoritmo para acompanhar os passos e os resultados.</span></div>
       </section>}
 
-      {screen === 'run' && <section className="page-content execution-page"><button className="back-link" onClick={()=>setScreen('algorithm')}><ArrowLeft size={15}/> Voltar aos algoritmos</button><div className="page-heading"><div><div className="eyebrow"><span className="eyebrow-line"/> ETAPA 03 · VISUALIZAÇÃO</div><h1>Acompanhe a execução<span className="title-period">.</span></h1><p className="lead">Veja como o algoritmo percorre e analisa a sua rede.</p></div><span className="coming-badge"><Clock3 size={14}/> EM DESENVOLVIMENTO</span></div>
-        <div className="execution-layout"><section className="canvas-card execution-graph"><div className="canvas-top"><div><span className="section-kicker">GRAFO EM ANÁLISE</span><h2>{chosen.short} — {chosen.name}</h2></div><span className="running-pill"><span/> Aguardando implementação</span></div><div className="canvas-wrap execution-canvas"><ReactFlow nodes={nodes.map((node)=>({...node,data:{...node.data,onRename:renameNode}}))} edges={edges.map((edge)=>({...edge,type:'radial',label:edge.data?.weight==null?undefined:String(edge.data.weight),data:{...edge.data,editing:editingEdgeId===edge.id,onEdit:setEditingEdgeId,onWeightChange:setEdgeWeight,onEditEnd:()=>setEditingEdgeId(null)},style:{stroke:'#a2aabd',strokeWidth:1.7},labelStyle:{fill:'#526078',fontWeight:700,fontSize:12},markerEnd:edge.data?.directed?{type:MarkerType.ArrowClosed,color:'#8e9aae'}:undefined}))} nodeTypes={nodeTypes} edgeTypes={edgeTypes} nodesDraggable={false} nodesConnectable={false} elementsSelectable={false} fitView><Background color="#e6e9ef" gap={20} size={1}/><Controls showInteractive={false}/></ReactFlow><div className="execution-overlay"><div className="overlay-icon"><Code2 size={21}/></div><b>Seu algoritmo entra aqui</b><p>Quando a lógica estiver implementada, o nó ativo será destacado neste espaço.</p></div></div></section>
-          <aside className="step-panel"><div className="step-panel-head"><div><span className="section-kicker">PASSO A PASSO</span><h2>Execução</h2></div><span className="step-count">{String(activeStep).padStart(2,'0')} <i>/</i> 00</span></div><div className="step-empty"><div className="step-empty-icon"><Activity size={22}/></div><b>Nenhuma etapa ainda</b><p>Os passos do algoritmo aparecerão aqui conforme ele percorre o grafo.</p></div><div className="step-preview"><div className="preview-label"><span className="pulse-dot"/> PRÓXIMA AÇÃO</div><b>{stepLabel}</b><p>O nó em análise será destacado no grafo.</p></div><div className="step-controls"><button disabled><ArrowLeft size={15}/> Anterior</button><button disabled>Próximo <ArrowRight size={15}/></button></div></aside></div>
-        <section className="result-card"><div className="result-head"><div><span className="section-kicker">SAÍDA DO ALGORITMO</span><h2>Resultado</h2></div><span className="result-format"><Code2 size={14}/> TEXTO</span></div><div className="result-placeholder"><div className="result-placeholder-icon"><Code2 size={18}/></div><div><b>O resultado será exibido aqui</b><p>Distâncias, ordem de visita ou arestas selecionadas aparecerão neste quadro.</p></div></div></section>
-        <div className="algorithm-note"><div className="note-icon"><CircleHelp size={16}/></div><span>Área pronta para conectar ao retorno <code>{'{ steps, result }'}</code> das funções em <code>src/graphAlgorithms.js</code>.</span></div>
+      {screen === 'run' && <section className="page-content execution-page">
+        <button className="back-link" onClick={() => setScreen('algorithm')}><ArrowLeft size={15}/> Voltar aos algoritmos</button>
+        <div className="page-heading">
+          <div><div className="eyebrow"><span className="eyebrow-line"/> ETAPA 03 · VISUALIZAÇÃO</div><h1>Acompanhe a execução<span className="title-period">.</span></h1><p className="lead">Veja como o algoritmo percorre e analisa a sua rede.</p></div>
+          <span className={`running-pill execution-status-${executionStatus}`}><span/>{executionStatus === 'loading' ? 'Executando algoritmo' : executionStatus === 'success' ? 'Execução concluída' : executionStatus === 'error' ? 'Execução não concluída' : 'Aguardando execução'}</span>
+        </div>
+        <div className={`execution-layout ${executionStatus === 'success' && selectedAlgorithm !== 'kruskal' ? 'has-study' : ''}`}>
+          <section className="canvas-card execution-graph">
+            <div className="canvas-top"><div><span className="section-kicker">GRAFO EM ANÁLISE</span><h2>{chosen.short} — {chosen.name}</h2></div></div>
+            <div className="canvas-wrap execution-canvas">
+              <ReactFlow
+                nodes={nodes.map((node) => ({ ...node, data: { ...node.data, onRename: renameNode, algorithmActive: activeNodeIds.has(node.id) } }))}
+                edges={edges.map((edge) => {
+                  const isActive = (currentStep?.type === 'inspect-edge' || currentStep?.type === 'visit-node') && currentStep.edgeId === edge.id;
+                  const isKruskalStep = isActive && executionResult?.algorithm === 'kruskal';
+                  const stroke = isActive
+                    ? isKruskalStep ? currentStep.selected ? '#34a879' : '#d46b72' : '#e3a536'
+                    : examinedEdges.get(edge.id) === 'tree' ? '#5368e9' : examinedEdges.has(edge.id) && selectedAlgorithm === 'dfs' ? '#bd7950' : '#a2aabd';
+                  return { ...edge, type: 'radial', label: edge.data?.weight == null ? undefined : String(edge.data.weight), data: { ...edge.data, editing: editingEdgeId === edge.id, onEdit: setEditingEdgeId, onWeightChange: setEdgeWeight, onEditEnd: () => setEditingEdgeId(null) }, style: { stroke, strokeWidth: isActive ? 3 : 1.7, strokeDasharray: selectedAlgorithm === 'dfs' && examinedEdges.has(edge.id) && examinedEdges.get(edge.id) !== 'tree' ? '7 6' : undefined }, labelStyle: { fill: '#526078', fontWeight: 700, fontSize: 12 }, markerEnd: edge.data?.directed ? { type: MarkerType.ArrowClosed, color: stroke } : undefined };
+                })}
+                nodeTypes={nodeTypes} edgeTypes={edgeTypes} nodesDraggable={false} nodesConnectable={false} elementsSelectable={false} fitView
+              ><Background color="#e6e9ef" gap={20} size={1}/><Controls showInteractive={false}/></ReactFlow>
+              {executionStatus !== 'success' && <div className={`execution-overlay ${executionStatus === 'error' ? 'execution-failed' : ''}`}>
+                <div className="overlay-icon"><Code2 size={21}/></div>
+                <b>{executionStatus === 'loading' ? 'Executando algoritmo' : executionStatus === 'error' ? 'Não foi possível concluir' : 'Aguardando execução'}</b>
+                <p>{executionStatus === 'error' ? executionError : executionStatus === 'loading' ? 'Preparando os passos da execução.' : 'Selecione um algoritmo e inicie a execução.'}</p>
+              </div>}
+            </div>
+          </section>
+          {executionStatus === 'success' && <AlgorithmStudy algorithm={executionResult.algorithm} nodes={nodes} edges={edges} steps={executionSteps} activeStep={activeStep}/>}
+          <aside className="step-panel">
+            <div className="step-panel-head"><div><span className="section-kicker">PASSO A PASSO</span><h2>Execução</h2></div><span className="step-count">{String(executionSteps.length ? activeStep + 1 : 0).padStart(2, '0')} <i>/</i> {String(executionSteps.length).padStart(2, '0')}</span></div>
+            {currentStep
+              ? <div className="step-current"><div className="preview-label"><span className="pulse-dot"/> PASSO {String(activeStep + 1).padStart(2, '0')}</div><b>{currentStep.message}</b>{currentStep.detailLabel && <div className="step-node-weight"><span>NÓ</span><strong>{currentStep.label}</strong><span>{currentStep.detailLabel}</span><strong>{currentStep.detailValue}</strong></div>}</div>
+              : <div className="step-empty"><div className="step-empty-icon"><Activity size={22}/></div><b>{executionStatus === 'loading' ? 'Preparando a execução' : executionStatus === 'error' ? 'Verifique o grafo' : 'Nenhuma etapa ainda'}</b><p>{executionStatus === 'error' ? executionError : 'Os passos do algoritmo aparecerão aqui.'}</p></div>}
+            <div className="step-controls">
+              <button title="Primeiro passo" aria-label="Primeiro passo" disabled={executionStatus !== 'success' || activeStep <= 0} onClick={() => setActiveStep(0)}>Início</button>
+              <button disabled={executionStatus !== 'success' || activeStep <= 0} onClick={() => setActiveStep((step) => Math.max(0, step - 1))}><ArrowLeft size={15}/> Anterior</button>
+              <button disabled={executionStatus !== 'success' || activeStep >= executionSteps.length - 1} onClick={() => setActiveStep((step) => Math.min(executionSteps.length - 1, step + 1))}>Próximo <ArrowRight size={15}/></button>
+              <button title="Último passo" aria-label="Último passo" disabled={executionStatus !== 'success' || activeStep >= executionSteps.length - 1} onClick={() => setActiveStep(executionSteps.length - 1)}>Fim</button>
+            </div>
+          </aside>
+        </div>
+        <details className="execution-result-details"><summary><span><Code2 size={14}/> Resultado final em texto</span><span>Expandir / recolher</span></summary><section className="result-card"><div className="result-head"><div><span className="section-kicker">SAÍDA DO ALGORITMO</span><h2>Resultado</h2></div><span className="result-format"><Code2 size={14}/> JAVASCRIPT</span></div><div className="result-placeholder"><div className="result-placeholder-icon"><Code2 size={18}/></div><div><b>{executionStatus === 'success' ? resultTitle : executionStatus === 'error' ? 'Erro na execução' : 'Resultado do algoritmo'}</b><p className={executionStatus === 'error' ? 'execution-error-text' : ''}>{executionStatus === 'success' ? formattedResult : executionStatus === 'error' ? executionError : 'O resultado do algoritmo aparecerá aqui.'}</p></div></div></section></details>
       </section>}
     </main>
   </div>;
