@@ -170,10 +170,16 @@
 .execution-page .study-legend{flex:0 0 auto;gap:6px 12px;font-size:9px;margin-top:8px}
 .execution-page .study-caption{flex:0 0 auto;font-size:9px;line-height:1.45;margin-top:7px}
 .execution-page .study-table-scroll{flex:1;min-height:0}
-.execution-page .study-table th,.execution-page .study-table td{height:37px;min-width:44px;padding:5px 8px;font-size:10px}
+.execution-page .study-table th,.execution-page .study-table td{height:28px;min-width:32px;padding:2px 5px;font-size:10px}
+.execution-page .study-table caption{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.execution-page .distance-selected{min-width:22px;min-height:22px;padding:0}
 .execution-page .study-table thead th{position:sticky;top:0;z-index:1}
 .execution-page .algorithm-study .bfs-list-study{flex:1;min-height:0;overflow:auto;padding:6px;display:flex;flex-direction:column;justify-content:center}
 .execution-page .bfs-list-scroll{flex:0 0 auto;margin:18px 0}
+.execution-page .bfs-list-row{width:100%;min-width:0;flex-wrap:wrap;gap:10px 8px}
+.execution-page .bfs-list-entry{min-width:40px}
+.execution-page .bfs-list-node{min-width:36px;min-height:36px;padding:5px;font-size:16px}
+.execution-page .bfs-list-bracket{font-size:44px}
 .execution-page .step-panel{grid-column:1/-1;grid-row:2;min-height:0;padding:10px 12px;display:grid;grid-template-columns:120px minmax(0,1fr) 290px;align-items:center;gap:12px}
 .execution-page .step-panel-head{flex-wrap:wrap;gap:6px}
 .execution-page .step-panel h2{font-size:11px}
@@ -196,6 +202,7 @@
 .execution-result-details>summary span:first-child{display:flex;align-items:center;gap:7px}
 .execution-result-details>summary span:last-child{font-size:9px;color:#919aab}
 .execution-result-details .result-card{margin:0;border:0;border-top:1px solid #edf0f6;border-radius:0;box-shadow:none;max-height:25dvh;overflow:auto}
+@media(max-height:700px){.execution-page .study-table th,.execution-page .study-table td{height:24px;font-size:9px}.execution-page .distance-selected{min-height:19px;min-width:19px;font-size:9px}}
 @media(max-width:1100px){.run-screen .execution-page{padding:12px}.execution-page .step-panel{grid-template-columns:95px minmax(0,1fr) 260px;gap:8px}.execution-page .step-controls{grid-template-columns:40px 1fr 1fr 34px}.execution-page .step-controls button{font-size:9px;gap:3px}}
 @media(max-width:800px){.execution-page .page-heading h1{font-size:20px}.execution-page .step-panel{grid-template-columns:minmax(0,1fr) 270px}.execution-page .step-panel-head{display:none}.execution-page .lead{display:none}.execution-page .algorithm-study .section-kicker{font-size:7px}.execution-page .study-legend span:last-child{display:none}}
 @media(max-width:600px){.run-screen .execution-page{gap:7px;padding:10px 8px}.execution-page .page-heading{flex-direction:row;align-items:center;margin:0}.execution-page .page-heading h1{font-size:17px}.execution-page .page-heading .eyebrow{display:none}.execution-page .running-pill{padding:4px 6px;font-size:7px;white-space:nowrap}.execution-page .execution-layout.has-study{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(120px,.8fr) minmax(150px,1fr) auto;gap:7px}.execution-page .algorithm-study{grid-column:1;grid-row:2;padding:8px}.execution-page .step-panel{grid-row:3;grid-template-columns:minmax(0,1fr);gap:6px;padding:7px}.execution-page .execution-layout:not(.has-study) .step-panel{grid-row:2}.execution-page .step-controls{grid-template-columns:48px 1fr 1fr 42px}.execution-page .step-current{padding:6px 8px}.execution-page .step-node-weight{display:none}.execution-page .canvas-top{height:34px;min-height:34px;padding:4px 9px}.execution-page .canvas-top .section-kicker{display:none}.execution-page .study-caption{display:none}.execution-page .study-legend{margin-top:4px;font-size:8px}.execution-page .study-view-tools{margin-bottom:4px}.execution-page .study-view-tools button{padding:3px 6px;font-size:8px}.execution-page .algorithm-study .result-head{min-height:22px;margin-bottom:4px}.execution-page .algorithm-study .bfs-list-study{justify-content:flex-start}.execution-page .bfs-list-intro{display:none}.execution-page .bfs-list-scroll{margin:0}.execution-page .bfs-list-entry{gap:4px}.execution-page .bfs-list-node{min-height:32px;min-width:32px;font-size:14px;padding:4px}.execution-page .bfs-list-bracket{font-size:40px}.execution-page .bfs-list-summary{padding:6px;font-size:9px}.execution-result-details>summary{min-height:28px}}
