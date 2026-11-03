@@ -35,7 +35,8 @@ O grafo é uma lista de adjacência. Neste exemplo em Python, a aresta vai de A 
 ```python
 graph = {
     "A": [{"id": "B", "weight": 2}],
-    "B": [],
+    "B": [{"id": "A", "weight": 3}],
+    "C": [{"id": "B", "weight": 2}, {"id": "A", "weight": 5}]
 }
 ```
 

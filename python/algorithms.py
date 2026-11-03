@@ -85,32 +85,32 @@ def dijkstra(graph, start_vertex):
     return dist
 
 
-def kruskal(vertices, edges):
-    # No começo, cada nó forma seu próprio grupo.
-    groups = [[node] for node in vertices]
-    chosen = []
+def kruskal(vertices, arestas):
+    # No começo, cada nó forma seu próprio grupo (pares).
+    grupos = [[node] for node in vertices]
+    escolhido = []
 
     # Começamos pelas arestas mais baratas, sem alterar a lista original.
-    for edge in sorted(edges, key=lambda item: item["weight"]):
-        source_group = None
-        target_group = None
-        for group in groups:
-            if edge["source"] in group:
-                source_group = group
-            if edge["target"] in group:
-                target_group = group
-        if source_group is None or target_group is None:
+    for aresta in sorted(arestas, key=lambda item: item["peso"]):
+        grupo_fonte = None
+        grupo_destino = None
+        for grupo in grupos:
+            if aresta["fonte"] in grupo:
+                grupo_fonte = grupo
+            if aresta["destino"] in grupo:
+                grupo_destino = grupo
+        if grupo_fonte is None or grupo_destino is None:
             raise ValueError("Uma aresta aponta para um nó inexistente.")
 
         # Se os nós já estão no mesmo grupo, a aresta criaria um ciclo.
-        if source_group is not target_group:
-            chosen.append(edge)
-            source_group.extend(target_group)
-            groups.remove(target_group)
+        if grupo_fonte is not grupo_destino:
+            escolhido.append(aresta)
+            grupo_fonte.extend(grupo_destino)
+            grupos.remove(grupo_destino)
 
     # Vários grupos no final significam que encontramos uma floresta.
-    total_weight = sum(edge["weight"] for edge in chosen)
-    return {"edges": chosen, "totalWeight": total_weight, "components": len(groups)}
+    peso_total = sum(aresta["peso"] for aresta in escolhido)
+    return {"edges": escolhido, "totalWeight": peso_total, "components": len(grupos)}
 
 
 if __name__ == "__main__":
@@ -122,5 +122,5 @@ if __name__ == "__main__":
     print("DFS:", dfs(graph, "A"))
     print("BFS:", bfs(graph, "A"))
     print("Dijkstra:", dijkstra(graph, "A"))
-    edges = [{"source": "A", "target": "B", "weight": 2}]
-    print("Kruskal:", kruskal(list(graph), edges))
+    arestas = [{"fonte": "A", "destino": "B", "weight": 2}]
+    print("Kruskal:", kruskal(list(graph), arestas))

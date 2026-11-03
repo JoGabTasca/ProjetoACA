@@ -191,6 +191,14 @@ function App() {
   const executionSteps = executionResult?.steps ?? [];
   const currentStep = executionSteps[activeStep] ?? null;
   const examinedEdges = traversalState(executionSteps.slice(0, activeStep + 1));
+  const kruskalSelectedEdges = new Set(executionSteps
+    .slice(0, activeStep + 1)
+    .filter((step) => step.type === 'inspect-edge' && step.selected)
+    .map((step) => step.edgeId));
+  const kruskalRejectedEdges = new Set(executionSteps
+    .slice(0, activeStep)
+    .filter((step) => step.type === 'inspect-edge' && !step.selected)
+    .map((step) => step.edgeId));
   const activeNodeIds = new Set();
   if (currentStep?.nodeId) activeNodeIds.add(currentStep.nodeId);
   if (currentStep?.type === 'inspect-edge') {
@@ -300,11 +308,14 @@ function App() {
                 nodes={nodes.map((node) => ({ ...node, data: { ...node.data, onRename: renameNode, algorithmActive: activeNodeIds.has(node.id) } }))}
                 edges={edges.map((edge) => {
                   const isActive = (currentStep?.type === 'inspect-edge' || currentStep?.type === 'visit-node') && currentStep.edgeId === edge.id;
-                  const isKruskalStep = isActive && executionResult?.algorithm === 'kruskal';
-                  const stroke = isActive
-                    ? isKruskalStep ? currentStep.selected ? '#34a879' : '#d46b72' : '#e3a536'
-                    : examinedEdges.get(edge.id) === 'tree' ? '#5368e9' : examinedEdges.has(edge.id) && selectedAlgorithm === 'dfs' ? '#bd7950' : '#a2aabd';
-                  return { ...edge, type: 'radial', label: edge.data?.weight == null ? undefined : String(edge.data.weight), data: { ...edge.data, editing: editingEdgeId === edge.id, onEdit: setEditingEdgeId, onWeightChange: setEdgeWeight, onEditEnd: () => setEditingEdgeId(null) }, style: { stroke, strokeWidth: isActive ? 3 : 1.7, strokeDasharray: selectedAlgorithm === 'dfs' && examinedEdges.has(edge.id) && examinedEdges.get(edge.id) !== 'tree' ? '7 6' : undefined }, labelStyle: { fill: '#526078', fontWeight: 700, fontSize: 12 }, markerEnd: edge.data?.directed ? { type: MarkerType.ArrowClosed, color: stroke } : undefined };
+                  const isKruskal = executionResult?.algorithm === 'kruskal';
+                  const wasRejected = isKruskal && kruskalRejectedEdges.has(edge.id);
+                  const isChosen = isKruskal && kruskalSelectedEdges.has(edge.id);
+                  const stroke = isKruskal
+                    ? isChosen ? '#34a879' : isActive && !currentStep.selected ? '#d46b72' : '#a2aabd'
+                    : isActive ? '#e3a536'
+                      : examinedEdges.get(edge.id) === 'tree' ? '#5368e9' : examinedEdges.has(edge.id) && selectedAlgorithm === 'dfs' ? '#bd7950' : '#a2aabd';
+                  return { ...edge, hidden: wasRejected && !isActive, type: 'radial', label: edge.data?.weight == null ? undefined : String(edge.data.weight), data: { ...edge.data, editing: editingEdgeId === edge.id, onEdit: setEditingEdgeId, onWeightChange: setEdgeWeight, onEditEnd: () => setEditingEdgeId(null) }, style: { stroke, strokeWidth: isActive ? 3 : isChosen ? 2.5 : 1.7, strokeDasharray: selectedAlgorithm === 'dfs' && examinedEdges.has(edge.id) && examinedEdges.get(edge.id) !== 'tree' ? '7 6' : undefined }, labelStyle: { fill: '#526078', fontWeight: 700, fontSize: 12 }, markerEnd: edge.data?.directed ? { type: MarkerType.ArrowClosed, color: stroke } : undefined };
                 })}
                 nodeTypes={nodeTypes} edgeTypes={edgeTypes} nodesDraggable={false} nodesConnectable={false} elementsSelectable={false} fitView
               ><Background color="#e6e9ef" gap={20} size={1}/><Controls showInteractive={false}/></ReactFlow>
