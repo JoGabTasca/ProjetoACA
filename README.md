@@ -1,5 +1,12 @@
 # SmartNet Analyzer
 
+## Identificação do trabalho
+
+- **Integrantes (nome e matrícula):** João Gabriel Tasca Barroso de Assis - 202307623911.
+- **Curso:** Ciencia de Dados & IA.
+- **Disciplina:** Analise e Complexidade de Algoritmos (Engenharia de Computação/Software).
+- **Professor:** Cassius Figueiredo.
+
 Aplicação React para montar grafos e visualizar DFS, BFS, Dijkstra e Kruskal. Todos os algoritmos executam em JavaScript no navegador.
 
 ## Executar
@@ -15,7 +22,7 @@ Abra o endereço mostrado pelo Vite. Para gerar a versão estática, use `npm ru
 
 ## Do Python para JavaScript
 
-`python/algorithms.py` contém a implementação básica dos algoritmos, com comentários e apenas o resultado final. `src/graphAlgorithms.js` contém a adaptação para o navegador, ampliada com o registro de cada passo para alimentar as visualizações.
+`python/algorithms.py` contém a implementação de referência dos algoritmos, com comentários e resultado final. BFS inclui os níveis e a ordem de retirada da fila. `src/graphAlgorithms.js` contém a adaptação para o navegador, ampliada com o registro de cada passo para alimentar as visualizações.
 
 As duas versões usam os mesmos parâmetros principais e calculam resultados finais equivalentes:
 
@@ -26,7 +33,7 @@ As duas versões usam os mesmos parâmetros principais e calculam resultados fin
 | `dijkstra(graph, start_vertex)` | `dijkstra(graph, startVertex)` | Grafo e ID da origem |
 | `kruskal(vertices, edges)` | `kruskal(vertices, edges)` | Lista de IDs e lista de arestas |
 
-Em Python, cada função devolve diretamente o resultado: DFS retorna os tempos de entrada e saída; BFS, os níveis dos nós; Dijkstra, as distâncias; Kruskal, as arestas escolhidas, o peso total e a quantidade de componentes. Não há histórico, cópias de estados ou classificação de arestas para a interface.
+Em Python, cada função devolve diretamente o resultado: DFS retorna os tempos de pré-visita e pós-visita; BFS retorna os níveis e a ordem de retirada da fila; Dijkstra retorna as distâncias; Kruskal retorna as arestas escolhidas, o peso total e a quantidade de componentes. BFS percorre a fila com um índice, mantendo O(V + E). Não há histórico, cópias de estados ou classificação de arestas para a interface.
 
 Em JavaScript, cada função devolve `result` e `steps`. O cálculo segue a mesma ideia, com registros adicionais de visitas, fila, arestas e distâncias intermediárias. Visitados, fila, relógio e grupos são criados dentro das funções.
 
@@ -55,7 +62,7 @@ DFS e BFS percorrem os nós alcançáveis pela origem, respeitando as direções
 
 Apenas no JavaScript, os registros de fila e distâncias são cópias: avançar a execução não altera os passos anteriores. `src/algorithmRunner.js` adapta os dados do editor e acrescenta os nomes e mensagens da interface, sem requisições HTTP.
 
-As complexidades mostradas na aplicação consideram o cálculo em JavaScript sem o histórico visual. A versão Python prioriza a leitura, usando, por exemplo, `pop(0)` para tirar o primeiro item da fila. Copiar filas e distâncias no JavaScript acrescenta tempo e memória. Kruskal usa grupos em listas por simplicidade: sua busca de grupos custa O(V) por aresta, além da ordenação O(E log E).
+As complexidades mostradas na aplicação consideram o cálculo em JavaScript sem o histórico visual. BFS usa um índice para avançar na fila em ambas as versões, preservando O(V + E). Copiar filas e distâncias no JavaScript acrescenta tempo e memória para registrar os passos visuais. Kruskal usa grupos em listas por simplicidade: sua busca de grupos custa O(V) por aresta, além da ordenação O(E log E).
 
 ## Conferir as implementações
 
