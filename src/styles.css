@@ -206,3 +206,57 @@
 @media(max-width:1100px){.run-screen .execution-page{padding:12px}.execution-page .step-panel{grid-template-columns:95px minmax(0,1fr) 260px;gap:8px}.execution-page .step-controls{grid-template-columns:40px 1fr 1fr 34px}.execution-page .step-controls button{font-size:9px;gap:3px}}
 @media(max-width:800px){.execution-page .page-heading h1{font-size:20px}.execution-page .step-panel{grid-template-columns:minmax(0,1fr) 270px}.execution-page .step-panel-head{display:none}.execution-page .lead{display:none}.execution-page .algorithm-study .section-kicker{font-size:7px}.execution-page .study-legend span:last-child{display:none}}
 @media(max-width:600px){.run-screen .execution-page{gap:7px;padding:10px 8px}.execution-page .page-heading{flex-direction:row;align-items:center;margin:0}.execution-page .page-heading h1{font-size:17px}.execution-page .page-heading .eyebrow{display:none}.execution-page .running-pill{padding:4px 6px;font-size:7px;white-space:nowrap}.execution-page .execution-layout.has-study{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(120px,.8fr) minmax(150px,1fr) auto;gap:7px}.execution-page .algorithm-study{grid-column:1;grid-row:2;padding:8px}.execution-page .step-panel{grid-row:3;grid-template-columns:minmax(0,1fr);gap:6px;padding:7px}.execution-page .execution-layout:not(.has-study) .step-panel{grid-row:2}.execution-page .step-controls{grid-template-columns:48px 1fr 1fr 42px}.execution-page .step-current{padding:6px 8px}.execution-page .step-node-weight{display:none}.execution-page .canvas-top{height:34px;min-height:34px;padding:4px 9px}.execution-page .canvas-top .section-kicker{display:none}.execution-page .study-caption{display:none}.execution-page .study-legend{margin-top:4px;font-size:8px}.execution-page .study-view-tools{margin-bottom:4px}.execution-page .study-view-tools button{padding:3px 6px;font-size:8px}.execution-page .algorithm-study .result-head{min-height:22px;margin-bottom:4px}.execution-page .algorithm-study .bfs-list-study{justify-content:flex-start}.execution-page .bfs-list-intro{display:none}.execution-page .bfs-list-scroll{margin:0}.execution-page .bfs-list-entry{gap:4px}.execution-page .bfs-list-node{min-height:32px;min-width:32px;font-size:14px;padding:4px}.execution-page .bfs-list-bracket{font-size:40px}.execution-page .bfs-list-summary{padding:6px;font-size:9px}.execution-result-details>summary{min-height:28px}}
+
+/* Refinamento visual: modos, painéis e leitura em telas compactas. */
+.canvas-mode-indicator{position:absolute;z-index:7;top:14px;left:70px;display:flex;align-items:center;gap:8px;min-height:34px;padding:6px 10px;border:1px solid #e5e9f2;border-radius:8px;background:#ffffffed;color:#59647b;font-size:12px;box-shadow:0 2px 8px #26314a0a;backdrop-filter:blur(8px)}
+.canvas-mode-indicator b{font-weight:600;color:#414b63}
+.canvas-mode-indicator small{padding-left:8px;border-left:1px solid #e5e9f2;color:#78839a;font-size:11px}
+.mode-indicator-dot{width:8px;height:8px;flex:0 0 8px;border-radius:50%;background:#8490a6}
+.canvas-mode-indicator.mode-node{border-color:#dce2ff;background:#f8f9ff}
+.canvas-mode-indicator.mode-node .mode-indicator-dot{background:#5368e9;box-shadow:0 0 0 3px #5368e91a}
+.canvas-mode-indicator.mode-edge{border-color:#f0dfbd;background:#fffcf5}
+.canvas-mode-indicator.mode-edge .mode-indicator-dot{background:#d99a29;box-shadow:0 0 0 3px #d99a291c}
+.app-shell.build-screen .adjacency-list-floating{left:12px;bottom:0;width:min(620px,calc(100% - 294px));max-height:min(300px,38vh);padding:12px 14px 10px;border:1px solid #e3e7ef;border-bottom:0;border-radius:10px 10px 0 0;background:#fffffff5;box-shadow:0 -4px 20px #26314a0d;backdrop-filter:blur(10px)}
+.adjacency-list-floating summary{min-height:26px;font-size:11px;font-weight:600;color:#4d5870}
+.adjacency-list-floating summary span{font-size:10px}
+.adjacency-list-row{grid-template-columns:minmax(56px,84px) minmax(0,1fr);gap:9px;padding:6px 2px}
+.adjacency-list-row>b{font-size:10px}
+.adjacency-neighbor{font-size:10px}
+.adjacency-neighbor small{font-size:9px}
+.adjacency-no-neighbors,.adjacency-explanation{font-size:10px}
+.adjacency-explanation{line-height:1.55}
+.field-label,.section-kicker{font-size:10px}
+.canvas-badge,.tool-hint,.field-hint,.edge-instruction,.text-action,.algorithm-note,.back-link{font-size:11px}
+.control-count,.graph-summary,.algorithm-meta,.complexity,.not-ready{font-size:10px}
+.app-shell.build-screen .canvas-card,.app-shell.build-screen .adjacency-list-floating,.execution-page .execution-graph,.execution-page .algorithm-study,.execution-page .step-panel,.execution-result-details,.run-config,.algorithm-card{border-color:#e5e9f0;border-radius:10px;box-shadow:0 3px 12px #26314a0a}
+.execution-page .algorithm-study,.execution-page .step-panel{background:linear-gradient(180deg,#fff 0%,#fcfcfe 100%)}
+.execution-page .algorithm-study .result-head h2,.execution-page .step-panel h2{font-size:13px}
+.execution-page .step-current>b,.execution-page .step-controls button{font-size:11px}
+.execution-page .study-legend,.execution-page .study-caption{font-size:10px}
+@media(max-width:800px){
+  .canvas-mode-indicator{left:62px;top:12px;min-height:32px;padding:5px 8px;font-size:11px}
+  .canvas-mode-indicator small{font-size:10px}
+  .app-shell.build-screen .adjacency-list-floating{left:9px;bottom:55px;width:min(620px,calc(100% - 18px));max-height:min(240px,30vh);border-bottom:1px solid #e3e7ef;border-radius:10px}
+  .execution-page .step-panel{grid-template-columns:minmax(0,1fr) 270px}
+}
+@media(max-width:600px){
+  .canvas-mode-indicator{left:57px;top:10px;max-width:calc(100% - 108px);min-height:30px;padding:4px 7px;gap:6px;font-size:10px;white-space:nowrap}
+  .canvas-mode-indicator small{font-size:9px}
+  .app-shell.build-screen .adjacency-list-floating{left:8px;bottom:54px;width:calc(100% - 16px);max-height:min(210px,30vh);padding:10px;border-radius:9px;border-bottom:1px solid #e3e7ef}
+  .adjacency-list-row{grid-template-columns:48px minmax(0,1fr);gap:6px}
+  .adjacency-neighbor{font-size:9px}
+  .adjacency-explanation{font-size:9px}
+  .execution-page .execution-layout.has-study{grid-template-rows:minmax(110px,.72fr) minmax(145px,1fr) auto}
+  .execution-page .step-panel{grid-template-columns:minmax(0,1fr);grid-row:3;gap:7px;padding:9px}
+  .execution-page .step-panel-head{display:flex;align-items:center;justify-content:space-between}
+  .execution-page .step-panel h2{font-size:12px}
+  .execution-page .step-controls button{height:38px;font-size:10px}
+  .execution-page .step-current{padding:8px 10px}
+  .execution-page .step-current>b{font-size:11px}
+  .execution-page .algorithm-study{padding:10px}
+  .execution-page .study-legend{font-size:9px}
+  .execution-page .algorithm-study .section-kicker{font-size:9px}
+  .execution-page .study-view-tools button{font-size:9px}
+  .execution-page .running-pill{font-size:9px}
+  .execution-result-details>summary{font-size:11px}
+}
